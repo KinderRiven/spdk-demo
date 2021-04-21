@@ -4,7 +4,7 @@ CC := g++
 # PKG-CONFIG
 SPDK_BUILD_DIR=/home/hanshukai/import_libs/spdk/build/lib
 SPDK_PKG_CONFIG_PATH = $(SPDK_BUILD_DIR)/pkgconfig
-SPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(SPDK_PKG_CONFIG_PATH)" pkg-config --libs spdk_env spdk_event spdk_bdev spdk_thread)
+SPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(SPDK_PKG_CONFIG_PATH)" pkg-config --libs spdk_env_dpdk spdk_env spdk_event spdk_bdev spdk_thread)
 
 DPDK_BUILD_DIR=/home/hanshukai/import_libs/spdk/dpdk/build/lib
 DPDK_PKG_CONFIG_PATH = $(DPDK_BUILD_DIR)/pkgconfig
