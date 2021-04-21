@@ -23,9 +23,9 @@ LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal -ltbb
 
 INC := -I./include
 
-all: test_open
+all: reactor_demo
 
-reactor_demo: clean reactor_demo.cc
+reactor_demo: clean
 	$(CC) --std=c++11 reactor_demo.cc.cc -o reactor_demo.cc $(INC) $(DPDK_LINK_FLAGS) $(SPDK_LINK_FLAGS) $(LINK_FLAGS)
 
 clean:
