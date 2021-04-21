@@ -12,6 +12,7 @@
 #include "spdk/bdev.h"
 #include "spdk/env.h"
 #include "spdk/event.h"
+#include "spdk/thread.h"
 #include "spdk/stdinc.h"
 
 char* g_bdev_name;
