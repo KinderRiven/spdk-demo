@@ -19,14 +19,14 @@ SPDK_LINK_FLAGS := -Wl,--whole-archive -L./third-party/spdk \
 # DPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)") pkg-config --libs spdk_env_dpdk
 # SPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)") pkg-config --libs spdk_nvme
 
-LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal -ltbb
+LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal
 
 INC := -I./include
 
 all: reactor_demo
 
 reactor_demo: clean
-	$(CC) --std=c++11 reactor_demo.cc.cc -o reactor_demo.cc $(INC) $(DPDK_LINK_FLAGS) $(SPDK_LINK_FLAGS) $(LINK_FLAGS)
+	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo.cc $(INC) $(DPDK_LINK_FLAGS) $(SPDK_LINK_FLAGS) $(LINK_FLAGS)
 
 clean:
 	rm -rf reactor_demo
