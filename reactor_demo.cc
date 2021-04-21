@@ -177,7 +177,7 @@ int main(int argc, char** argv)
 
     printf("APP [name:%s]\n", _app_msg.bdev_name);
     _rc = spdk_app_start(&_app_opts, start_app, (void*)&_app_msg);
-    printf("Reactor Exit! (%d)\n", rc);
-    spdk_app_stop(rc);
+    printf("Reactor Exit! (%d)\n", _rc);
+    spdk_app_stop(_rc);
     return 0;
 }
