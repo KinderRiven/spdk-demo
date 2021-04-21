@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     struct spdk_app_opts _app_opts = {};
 
     // 1.参数化参数
-    spdk_app_opts_init(&_app_opts, sizeof(_app_opts));
+    spdk_app_opts_init(&_app_opts);
     _app_opts.name = "bdev-example";
 
     // 2.参数解析
