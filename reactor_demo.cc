@@ -77,6 +77,7 @@ void start_app(void* cb)
 
     for (int i = 0; i < 100; i++) {
         int* core = (int*)malloc(sizeof(int));
+        *core = i;
         struct spdk_event* event = spdk_event_allocate(i % g_num_reactor, event_1, (void*)core, nullptr);
         spdk_event_call(event);
     }
