@@ -75,7 +75,7 @@ void start_app(void* cb)
     struct spdk_poller* poller_3 = spdk_poller_register(tick_f3, (void*)tick_3, *tick_3);
     */
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
         *core = i;
         struct spdk_event* event = spdk_event_allocate(i % g_num_reactor, event_1, (void*)core, nullptr);
