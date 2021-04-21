@@ -8,12 +8,11 @@ SPDK_LINK_FLAGS := `$(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)") pkg-config --l
 
 LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal
 
-INC := -I./include
 
 all: reactor_demo
 
 reactor_demo: clean
-	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo -Wl,--no-as-needed $(INC) $(SPDK_LINK_FLAGS) $(LINK_FLAGS) -Wl,--as-needed
+	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo -Wl,--no-as-needed $(SPDK_LINK_FLAGS) $(LINK_FLAGS) -Wl,--as-needed
 
 clean:
 	rm -rf reactor_demo
