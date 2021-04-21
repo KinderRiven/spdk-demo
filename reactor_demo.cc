@@ -60,7 +60,7 @@ void event_1(void* arg1, void* arg2)
 void start_app(void* cb)
 {
     printf("start_app!\n");
-
+    /*
     uint64_t* tick_1 = (uint64_t*)malloc(sizeof(uint64_t));
     *tick_1 = 500000;
     printf("poller_register (1)!\n");
@@ -76,7 +76,7 @@ void start_app(void* cb)
     *tick_3 = 100000;
     printf("poller_register (3)!\n");
     struct spdk_poller* poller_3 = spdk_poller_register(tick_f3, (void*)tick_3, *tick_3);
-
+    */
     int* core = (int*)malloc(sizeof(int));
     struct spdk_event* event = spdk_event_allocate(0, event_1, (void*)core, nullptr);
     spdk_event_call(event);
