@@ -13,7 +13,8 @@
 #include "spdk/env.h"
 #include "spdk/event.h"
 
-char* g_bdev_name;
+static char* g_bdev_name;
+static int g_num_reactor;
 
 struct app_msg_t {
 public:
@@ -78,11 +79,9 @@ void start_app(void* cb)
     struct spdk_poller* poller_3 = spdk_poller_register(tick_f3, (void*)tick_3, *tick_3);
     */
 
-   /*
     int* core = (int*)malloc(sizeof(int));
     struct spdk_event* event = spdk_event_allocate(0, event_1, (void*)core, nullptr);
     spdk_event_call(event);
-    */
 }
 
 int bdev_parse_arg(int ch, char* arg)
@@ -175,7 +174,9 @@ int main(int argc, char** argv)
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
         _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
 
-    printf("APP [name:%s]\n", _app_msg.bdev_name);
+    g_num_reactor = atol(_app_opts.reactor_mask);
+
+    printf("APP [name:%s][num_reactor:%d]\n", _app_msg.bdev_name, g_num_reactor);
     _rc = spdk_app_start(&_app_opts, start_app, (void*)&_app_msg);
     printf("Reactor Exit! (%d)\n", _rc);
     spdk_app_stop(_rc);
