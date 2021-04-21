@@ -167,7 +167,7 @@ int main(int argc, char** argv)
     */
     if ((_rc = spdk_app_parse_args(argc, argv, &_app_opts, "b:", nullptr, bdev_parse_arg, bdev_usage)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
         printf(">>>>[spdk_app_parse_arg error!]\n");
-        exit(rc);
+        exit(_rc);
     }
 
     // bdev name
