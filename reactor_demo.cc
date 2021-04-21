@@ -169,8 +169,8 @@ int main(int argc, char** argv)
 
     // bdev name
     _app_msg.bdev_name = g_bdev_name;
-    printf("OPT [name:%s][file_name:%s][reactor_mask:%s][master_core:%d]\n",
-        _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.master_core);
+    printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
+        _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
 
     printf("APP [name:%s]\n", _app_msg.bdev_name);
     _rc = spdk_app_start(&_app_opts, start_app, (void*)&_app_msg);
