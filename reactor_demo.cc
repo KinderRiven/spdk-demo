@@ -77,11 +77,11 @@ void start_app(void* cb)
     *tick_3 = 100000;
     printf("poller_register (3)!\n");
     struct spdk_poller* poller_3 = spdk_poller_register(tick_f3, (void*)tick_3, *tick_3);
-    */
 
     int* core = (int*)malloc(sizeof(int));
     struct spdk_event* event = spdk_event_allocate(0, event_1, (void*)core, nullptr);
     spdk_event_call(event);
+    */
 }
 
 int bdev_parse_arg(int ch, char* arg)
