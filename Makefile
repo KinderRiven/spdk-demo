@@ -12,7 +12,7 @@ LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal
 all: reactor_demo
 
 reactor_demo: clean
-	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo -Wl,--no-as-needed $(SPDK_LINK_FLAGS) $(LINK_FLAGS) -Wl,--as-needed
+	$(CC) --std=c++11 reactor_demo.cc $(LINK_FLAGS) -o reactor_demo -Wl,--no-as-needed $(SPDK_LINK_FLAGS) -Wl,--as-needed
 
 clean:
 	rm -rf reactor_demo
