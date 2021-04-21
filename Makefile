@@ -26,7 +26,7 @@ INC := -I./include
 all: reactor_demo
 
 reactor_demo: clean
-	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo.cc $(INC) $(DPDK_LINK_FLAGS) $(SPDK_LINK_FLAGS) $(LINK_FLAGS)
+	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo $(INC) $(DPDK_LINK_FLAGS) $(SPDK_LINK_FLAGS) $(LINK_FLAGS)
 
 clean:
 	rm -rf reactor_demo
