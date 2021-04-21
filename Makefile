@@ -8,7 +8,7 @@ SPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(SPDK_PKG_CONFIG_PATH)" pkg-config 
 
 DPDK_BUILD_DIR=/home/hanshukai/import_libs/spdk/dpdk/build/lib
 DPDK_PKG_CONFIG_PATH = $(DPDK_BUILD_DIR)/pkgconfig
-DPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(DPDK_PKG_CONFIG_PATH)" pkg-config --libs dpdk)
+DPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(DPDK_PKG_CONFIG_PATH)" pkg-config --libs libdpdk)
 
 LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal
 
