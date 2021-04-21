@@ -12,8 +12,8 @@
 #include "spdk/bdev.h"
 #include "spdk/env.h"
 #include "spdk/event.h"
-#include "spdk/thread.h"
 #include "spdk/stdinc.h"
+#include "spdk/thread.h"
 
 char* g_bdev_name;
 
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     struct spdk_app_opts _app_opts = {};
 
     // 1.参数化参数
-    spdk_app_opts_init(&_app_opts);
+    spdk_app_opts_init(&_app_opts, sizeof(_app_opts));
     _app_opts.name = "bdev-example";
 
     // 2.参数解析
