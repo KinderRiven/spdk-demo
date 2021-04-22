@@ -108,7 +108,7 @@ int main(int argc, char** argv)
         {"json",			required_argument,	NULL, JSON_CONFIG_OPT_IDX},
     };
     */
-    if ((_rc = spdk_app_parse_args(argc, argv, &_app_opts, nullptr, nullptr, nullptr, bdev_usage)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
+    if ((_rc = spdk_app_parse_args(argc, argv, &_app_opts, nullptr, nullptr, nullptr, nullptr)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
         printf(">>>>[spdk_app_parse_arg error!]\n");
         exit(_rc);
     }
