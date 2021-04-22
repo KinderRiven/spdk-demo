@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 19:13:35
+ * @LastEditTime: 2021-04-22 19:15:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -113,7 +113,6 @@ int main(int argc, char** argv)
         _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
     printf("APP [num_reactor:%d]\n", _app_argv.num_reactor);
     _rc = spdk_app_start(&_app_opts, start_app, (void*)&_app_argv);
-    printf("Reactor Exit! (%d)\n", _rc);
-    spdk_app_stop(_rc);
+    spdk_app_fini();
     return 0;
 }
