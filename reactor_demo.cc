@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 15:53:02
+ * @LastEditTime: 2021-04-22 15:54:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -42,7 +42,7 @@ void start_event(void* arg1, void* arg2)
 
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
-    printf("spdk_thread [id:%llu]\n", _spdk_thread->id);
+    printf("spdk_thread [id:%llu]\n", spdk_thread_get_id(_spdk_thread));
 
     // poller_register
     /*
