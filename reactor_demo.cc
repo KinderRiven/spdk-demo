@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 19:37:01
+ * @LastEditTime: 2021-04-22 19:50:32
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -27,6 +27,13 @@ public:
     int num_reactor;
 };
 
+struct core_argv_t {
+public:
+    int id;
+    struct spdk_poller* _poller;
+    struct spdk_thread* _thread;
+};
+
 int poller_function(void* num)
 {
     int p = *((int*)num);
@@ -36,42 +43,42 @@ int poller_function(void* num)
 
 void start_event(void* arg1, void* arg2)
 {
-    int _rc;
-    int _core_id = *((int*)arg1);
+    core_argv_t* _argv = (core_argv_t*)arg1;
+
+    // id
+    int _core_id = _argv->id;
     printf("Fuck you, man! This is start event [core_%d].\n", _core_id);
 
     // create thread
     char _name[128];
     sprintf(_name, "%d", _core_id);
-    struct spdk_thread* _thread = spdk_thread_create(_name, NULL);
-    spdk_set_thread(_thread);
+    _argv->_thread = spdk_thread_create(_name, NULL);
+    spdk_set_thread(_argv->_thread);
 
     // poller register
-    int* _argv = (int*)malloc(sizeof(int));
-    *_argv = _core_id;
     uint64_t _time = 500000UL;
     printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
-    struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
-    // struct spdk_poller* _poller = SPDK_POLLER_REGISTER(poller_function, (void*)_argv, _time);
-    assert(_poller != nullptr);
+    _argv->_poller = spdk_poller_register(poller_function, arg1, _time);
+    assert(_argv->_poller != nullptr);
 }
 
 void start_app(void* cb)
 {
     printf("START APPLICATION!\n");
 
-    int _v;
+    int i;
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [core_count:%d]\n", spdk_env_get_core_count());
 
-    int i;
+    core_argv_t _core_argv[128];
     SPDK_ENV_FOREACH_CORE(i)
     {
         if (i != spdk_env_get_first_core()) {
             int* __core = (int*)malloc(sizeof(int));
             *__core = i;
-            struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)__core, nullptr);
+            _core_argv[i].id = i;
+            struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)&_core_argv[i], nullptr);
             spdk_event_call(event);
         }
     }
