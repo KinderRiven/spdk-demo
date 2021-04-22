@@ -181,7 +181,7 @@ int main(int argc, char** argv)
             if (_tmp & 1) {
                 g_num_reactor++;
             }
-            _tmp >> 1;
+            _tmp >>= 1;
         }
     }
 
