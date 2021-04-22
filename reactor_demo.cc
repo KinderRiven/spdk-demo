@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 20:28:09
+ * @LastEditTime: 2021-04-22 20:30:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -58,6 +58,7 @@ void start_event(void* arg1, void* arg2)
 void stop_event(void* arg1, void* arg2)
 {
     printf("Fuck you, man! stop_event [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
+
     int _core_id = spdk_env_get_current_core();
     while (!g_core_argv[_core_id].vec_poller.empty()) {
         struct spdk_poller* __poller = g_core_argv[_core_id].vec_poller.front();
@@ -87,6 +88,7 @@ void start_app(void* cb)
 
 void stop_app()
 {
+#if 0
     int i;
     SPDK_ENV_FOREACH_CORE(i)
     {
@@ -95,6 +97,7 @@ void stop_app()
             spdk_event_call(event);
         }
     }
+#endif
     spdk_app_stop(0);
 }
 
