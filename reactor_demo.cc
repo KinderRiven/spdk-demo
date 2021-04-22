@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 15:21:36
+ * @LastEditTime: 2021-04-22 15:22:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -39,10 +39,10 @@ void start_event(void* arg1, void* arg2)
     printf("Fuck you, man! This is core [%d].\n", _core_id);
 
     // poller_register
-    printf("poller_register [%d]!\n", _core_id);
     int* _argv = (int*)malloc(sizeof(int));
     *_argv = _core_id;
     uint64_t _time = _core_id * 100000;
+        printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
     struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
 }
 
