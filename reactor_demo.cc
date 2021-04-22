@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:02:36
+ * @LastEditTime: 2021-04-22 16:02:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -62,7 +62,7 @@ void start_app(void* cb)
 
     app_argv_t* _argv = (app_argv_t*)cb;
     printf("start_app!\n");
-    for (int i = 0; i < 100; i++) { // master reactor可以在其他核上发起一个事件
+    for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
         *core = (i + 1);
         struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)core, nullptr);
