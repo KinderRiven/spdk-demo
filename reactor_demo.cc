@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 18:51:20
+ * @LastEditTime: 2021-04-22 18:59:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -45,6 +45,7 @@ void start_event(void* arg1, void* arg2)
     uint64_t _time = (_core_id + 1) * 500000;
     printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
     struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
+    assert(_poller != nullptr);
 }
 
 void start_app(void* cb)
@@ -59,9 +60,9 @@ void start_app(void* cb)
     // 对不同的核发起请求
     app_argv_t* _argv = (app_argv_t*)cb;
     for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
-        int* core = (int*)malloc(sizeof(int));
-        *core = i;
-        struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)core, nullptr);
+        int* __core = (int*)malloc(sizeof(int));
+        *__core = i;
+        struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)__core, nullptr);
         spdk_event_call(event);
     }
 }
