@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:02:54
+ * @LastEditTime: 2021-04-22 16:05:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -40,9 +40,10 @@ void start_event(void* arg1, void* arg2)
     int _core_id = *((int*)arg1);
     printf("Fuck you, man! This is core [%d].\n", _core_id);
 
-    // struct spdk_thread* _spdk_thread;
-    // _spdk_thread = spdk_get_thread();
-    // printf("spdk_thread [id:%llu]\n", spdk_thread_get_id(_spdk_thread));
+    struct spdk_thread* _spdk_thread;
+    _spdk_thread = spdk_get_thread();
+    assert(_spdk_thread != nullptr);
+    printf("spdk_thread [id:%llu]\n", spdk_thread_get_id(_spdk_thread));
 
     // poller_register
     /*
