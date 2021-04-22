@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 20:35:57
+ * @LastEditTime: 2021-04-22 20:38:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -96,7 +96,8 @@ void stop_app()
             spdk_event_call(event);
             while (!spdk_thread_is_exited(g_core_argv[i].thread)) {
             }
-            spdk_thread_destroy(g_core_argv[i].thread);
+            printf("FREE OK!\n");
+            // spdk_thread_destroy(g_core_argv[i].thread);
         }
     }
     spdk_app_stop(0);
