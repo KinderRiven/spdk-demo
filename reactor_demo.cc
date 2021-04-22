@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:58:41
+ * @LastEditTime: 2021-04-22 18:51:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -40,9 +40,11 @@ void start_event(void* arg1, void* arg2)
     int _core_id = *((int*)arg1);
     printf("Fuck you, man! This is start event [core_%d].\n", _core_id);
 
-    // char _name[128];
-    // sprintf(_name, "FuckYouMan_%d", _core_id);
-    // spdk_thread_create(_name, nullptr);
+    int* _argv = (int*)malloc(sizeof(int));
+    *_argv = _core_id;
+    uint64_t _time = (_core_id + 1) * 500000;
+    printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
+    struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
 }
 
 void start_app(void* cb)
@@ -58,27 +60,10 @@ void start_app(void* cb)
     app_argv_t* _argv = (app_argv_t*)cb;
     for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
-        *core = (i + 1);
+        *core = i;
         struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)core, nullptr);
         spdk_event_call(event);
     }
-
-    // poller
-    int _num_poller = 3;
-    struct spdk_poller* _poller[128];
-    for (int i = 0; i < _num_poller; i++) {
-        int* _argv = (int*)malloc(sizeof(int));
-        *_argv = i;
-        uint64_t _time = (i + 1) * 500000;
-        printf("poller_register [core_id:%d][time:%llu]!\n", i, _time);
-        _poller[i] = spdk_poller_register(poller_function, (void*)_argv, _time);
-    }
-
-#if 0
-    for (int i = 0; i < _num_poller; i++) {
-        spdk_poller_unregister(&_poller[i]);
-    }
-#endif
 }
 
 int main(int argc, char** argv)
