@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:23:34
+ * @LastEditTime: 2021-04-22 16:36:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -53,11 +53,13 @@ void start_event(void* arg1, void* arg2)
 void start_app(void* cb)
 {
     printf("START APPLICATION!\n");
+
+    int _v;
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [id:%llu/%d]\n", spdk_thread_get_id(_spdk_thread), spdk_thread_get_count());
 
-    // event
+    // 对不同的核发起请求
     app_argv_t* _argv = (app_argv_t*)cb;
     for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
@@ -67,12 +69,20 @@ void start_app(void* cb)
     }
 
     // poller
-    for (int i = 0; i < 3; i++) {
+    int _num_poller = 3;
+    struct spdk_poller* _poller[128];
+    for (int i = 0; i < _num_poller; i++) {
         int* _argv = (int*)malloc(sizeof(int));
         *_argv = i;
         uint64_t _time = (i + 1) * 500000;
         printf("poller_register [core_id:%d][time:%llu]!\n", i, _time);
-        struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
+        _poller[i] = spdk_poller_register(poller_function, (void*)_argv, _time);
+    }
+
+    printf("Input anything to unregister poller:");
+    scanf("%d", &_v);
+    for (int i = 0; i < _num_poller; i++) {
+        spdk_poller_unregister(&_poller[i]);
     }
 }
 
