@@ -13,92 +13,37 @@
 #include "spdk/env.h"
 #include "spdk/event.h"
 
-static char* g_bdev_name;
 static int g_num_reactor;
 
-struct app_msg_t {
-public:
-    char* bdev_name;
-};
-
-void write_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
+int poller_function(void* num)
 {
-    printf("[write_callback:%d]\n", success);
-}
-
-int tick_f1(void* num)
-{
-    uint64_t p = *((uint64_t*)num);
-    printf("[tick_f1:%llu]\n", p);
-    return 1;
-}
-
-int tick_f2(void* num)
-{
-    uint64_t p = *((uint64_t*)num);
-    printf("[tick_f2:%llu]\n", p);
-    return 1;
-}
-
-int tick_f3(void* num)
-{
-    uint64_t p = *((uint64_t*)num);
-    printf("[tick_f3:%llu]\n", p);
+    int p = *((int*)num);
+    printf("I'm core_%d\n", p);
     return 1;
 }
 
 void start_event(void* arg1, void* arg2)
 {
-    int* core = (int*)arg1;
-    int c = *core;
-    printf("Fuck you, man! This is core [%d].\n", c);
+    int _core_id = *((int*)arg1);
+    printf("Fuck you, man! This is core [%d].\n", _core_id);
+
+    // poller_register
+    printf("poller_register [%d]!\n", _core_id);
+    int* _argv = (int*)malloc(sizeof(int));
+    *_argv = _core_id;
+    uint64_t _time = _core_id * 100000;
+    struct spdk_poller* poller_1 = spdk_poller_register(poller_function, (void*)_argv, _time);
 }
 
 void start_app(void* cb)
 {
     printf("start_app!\n");
-    /*
-    uint64_t* tick_1 = (uint64_t*)malloc(sizeof(uint64_t));
-    *tick_1 = 500000;
-    printf("poller_register (1)!\n");
-    // time poller
-    struct spdk_poller* poller_1 = spdk_poller_register(tick_f1, (void*)tick_1, *tick_1);
-
-    uint64_t* tick_2 = (uint64_t*)malloc(sizeof(uint64_t));
-    *tick_2 = 5000000;
-    printf("poller_register (2)!\n");
-    struct spdk_poller* poller_2 = spdk_poller_register(tick_f2, (void*)tick_2, *tick_2);
-
-    uint64_t* tick_3 = (uint64_t*)malloc(sizeof(uint64_t));
-    *tick_3 = 100000;
-    printf("poller_register (3)!\n");
-    struct spdk_poller* poller_3 = spdk_poller_register(tick_f3, (void*)tick_3, *tick_3);
-    */
-
     for (int i = 0; i < g_num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
         *core = i;
         struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)core, nullptr);
         spdk_event_call(event);
     }
-}
-
-int bdev_parse_arg(int ch, char* arg)
-{
-    switch (ch) {
-    case 'b':
-        printf(">>>>[bdev_name(%c)-(%s)]\n", ch, arg);
-        g_bdev_name = arg;
-        break;
-    default:
-        break;
-    }
-    return 0;
-}
-
-void bdev_usage()
-{
-    printf(">>>>[bdev_usage]\n");
 }
 
 int main(int argc, char** argv)
@@ -163,13 +108,10 @@ int main(int argc, char** argv)
         {"json",			required_argument,	NULL, JSON_CONFIG_OPT_IDX},
     };
     */
-    if ((_rc = spdk_app_parse_args(argc, argv, &_app_opts, "b:", nullptr, bdev_parse_arg, bdev_usage)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
+    if ((_rc = spdk_app_parse_args(argc, argv, &_app_opts, nullptr, nullptr, nullptr, bdev_usage)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
         printf(">>>>[spdk_app_parse_arg error!]\n");
         exit(_rc);
     }
-
-    // bdev name
-    _app_msg.bdev_name = g_bdev_name;
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
         _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
 
@@ -185,7 +127,7 @@ int main(int argc, char** argv)
         }
     }
 
-    printf("APP [name:%s][num_reactor:%d]\n", _app_msg.bdev_name, g_num_reactor);
+    printf("APP [num_reactor:%d]\n", g_num_reactor);
     _rc = spdk_app_start(&_app_opts, start_app, (void*)&_app_msg);
     printf("Reactor Exit! (%d)\n", _rc);
     spdk_app_stop(_rc);
