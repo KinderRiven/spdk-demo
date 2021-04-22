@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 20:22:02
+ * @LastEditTime: 2021-04-22 20:22:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -80,7 +80,7 @@ void stop_app()
             spdk_event_call(event);
         }
     }
-    spdk_app_stop();
+    spdk_app_stop(0);
 }
 
 int main(int argc, char** argv)
