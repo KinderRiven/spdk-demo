@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:36:36
+ * @LastEditTime: 2021-04-22 16:58:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -31,7 +31,7 @@ int poller_function(void* num)
 {
     int p = *((int*)num);
     printf("poller_function [%d]\n", p);
-    return 1;
+    return 0;
 }
 
 void start_event(void* arg1, void* arg2)
@@ -40,14 +40,9 @@ void start_event(void* arg1, void* arg2)
     int _core_id = *((int*)arg1);
     printf("Fuck you, man! This is start event [core_%d].\n", _core_id);
 
-    // poller_register
-    /*
-    int* _argv = (int*)malloc(sizeof(int));
-    *_argv = _core_id;
-    uint64_t _time = _core_id * 100000;
-    printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
-    struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
-    */
+    // char _name[128];
+    // sprintf(_name, "FuckYouMan_%d", _core_id);
+    // spdk_thread_create(_name, nullptr);
 }
 
 void start_app(void* cb)
@@ -57,7 +52,7 @@ void start_app(void* cb)
     int _v;
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
-    printf("spdk_thread [id:%llu/%d]\n", spdk_thread_get_id(_spdk_thread), spdk_thread_get_count());
+    printf("spdk_thread [core_count:%d]\n", spdk_env_get_core_count());
 
     // 对不同的核发起请求
     app_argv_t* _argv = (app_argv_t*)cb;
@@ -79,11 +74,11 @@ void start_app(void* cb)
         _poller[i] = spdk_poller_register(poller_function, (void*)_argv, _time);
     }
 
-    printf("Input anything to unregister poller:");
-    scanf("%d", &_v);
+#if 0
     for (int i = 0; i < _num_poller; i++) {
         spdk_poller_unregister(&_poller[i]);
     }
+#endif
 }
 
 int main(int argc, char** argv)
@@ -104,6 +99,7 @@ int main(int argc, char** argv)
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
         _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
 
+    // 3.Count
     {
         int _tmp, _num_reactor = 0;
         sscanf(_app_opts.reactor_mask, "%x", &_tmp);
