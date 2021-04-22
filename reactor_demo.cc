@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:22:30
+ * @LastEditTime: 2021-04-22 16:23:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -70,7 +70,7 @@ void start_app(void* cb)
     for (int i = 0; i < 3; i++) {
         int* _argv = (int*)malloc(sizeof(int));
         *_argv = i;
-        uint64_t _time = (i + 1) * 200000;
+        uint64_t _time = (i + 1) * 500000;
         printf("poller_register [core_id:%d][time:%llu]!\n", i, _time);
         struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
     }
