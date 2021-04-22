@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 19:29:44
+ * @LastEditTime: 2021-04-22 19:32:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -44,7 +44,8 @@ void start_event(void* arg1, void* arg2)
     *_argv = _core_id;
     uint64_t _time = 500000UL;
     printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
-    struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
+    // struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
+    struct spdk_poller* _poller = SPDK_POLLER_REGISTER(poller_function, (void*)_argv, _time);
     assert(_poller != nullptr);
 }
 
@@ -57,17 +58,6 @@ void start_app(void* cb)
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [core_count:%d]\n", spdk_env_get_core_count());
 
-// 对不同的核发起请求
-#if 0
-    app_argv_t* _argv = (app_argv_t*)cb;
-    for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
-        int* __core = (int*)malloc(sizeof(int));
-        *__core = i;
-        struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)__core, nullptr);
-        spdk_event_call(event);
-    }
-#endif
-
     int i;
     SPDK_ENV_FOREACH_CORE(i)
     {
@@ -78,8 +68,6 @@ void start_app(void* cb)
             spdk_event_call(event);
         }
     }
-
-    while(1);
 }
 
 int main(int argc, char** argv)
