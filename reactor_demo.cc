@@ -78,7 +78,7 @@ void start_app(void* cb)
     for (int i = 0; i < g_num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
         *core = i;
-        struct spdk_event* event = spdk_event_allocate(i % g_num_reactor, start_event, (void*)core, nullptr);
+        struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)core, nullptr);
         spdk_event_call(event);
     }
 }
@@ -173,7 +173,17 @@ int main(int argc, char** argv)
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
         _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
 
-    sscanf(_app_opts.reactor_mask, "%x", &g_num_reactor);
+    {
+        int _tmp;
+        sscanf(_app_opts.reactor_mask, "%x", &_tmp);
+        g_num_reactor = 0;
+        while (_tmp) {
+            if (_tmp & 1) {
+                g_num_reactor++;
+            }
+            _tmp >> 1;
+        }
+    }
 
     printf("APP [name:%s][num_reactor:%d]\n", _app_msg.bdev_name, g_num_reactor);
     _rc = spdk_app_start(&_app_opts, start_app, (void*)&_app_msg);
