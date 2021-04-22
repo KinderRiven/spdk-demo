@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 15:22:53
+ * @LastEditTime: 2021-04-22 15:53:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -20,6 +20,7 @@
 #include "spdk/bdev.h"
 #include "spdk/env.h"
 #include "spdk/event.h"
+#include "spdk/thread.h"
 
 struct app_argv_t {
 public:
@@ -35,15 +36,22 @@ int poller_function(void* num)
 
 void start_event(void* arg1, void* arg2)
 {
+    int _rc;
     int _core_id = *((int*)arg1);
     printf("Fuck you, man! This is core [%d].\n", _core_id);
 
+    struct spdk_thread* _spdk_thread;
+    _spdk_thread = spdk_get_thread();
+    printf("spdk_thread [id:%llu]\n", _spdk_thread->id);
+
     // poller_register
+    /*
     int* _argv = (int*)malloc(sizeof(int));
     *_argv = _core_id;
     uint64_t _time = _core_id * 100000;
-        printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
+    printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
     struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
+    */
 }
 
 void start_app(void* cb)
