@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 20:22:46
+ * @LastEditTime: 2021-04-22 20:28:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <queue>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +22,13 @@
 #include "spdk/env.h"
 #include "spdk/event.h"
 #include "spdk/thread.h"
+
+struct core_argv_t {
+public:
+    std::queue<struct spdk_poller*> vec_poller;
+};
+
+static core_argv_t g_core_argv[128];
 
 int poller_function(void* argv)
 {
@@ -43,12 +51,19 @@ void start_event(void* arg1, void* arg2)
     uint64_t _time = 500000UL;
     printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
     struct spdk_poller* _poller = spdk_poller_register(poller_function, arg1, _time);
+    g_core_argv[_core_id].vec_poller.push(_poller);
     assert(_poller != nullptr);
 }
 
 void stop_event(void* arg1, void* arg2)
 {
     printf("Fuck you, man! stop_event [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
+    int _core_id = spdk_env_get_current_core();
+    while (!g_core_argv[_core_id].vec_poller.empty()) {
+        struct spdk_poller* __poller = g_core_argv[_core_id].vec_poller.front();
+        g_core_argv[_core_id].vec_poller.pop();
+        spdk_poller_unregister(&__poller);
+    }
     spdk_thread_exit(spdk_get_thread());
 }
 
