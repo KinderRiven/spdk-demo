@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:10:39
+ * @LastEditTime: 2021-04-22 16:21:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -30,7 +30,7 @@ public:
 int poller_function(void* num)
 {
     int p = *((int*)num);
-    printf("I'm core_%d\n", p);
+    printf("poller_function [%d]\n", p);
     return 1;
 }
 
@@ -52,17 +52,26 @@ void start_event(void* arg1, void* arg2)
 
 void start_app(void* cb)
 {
+    printf("START APPLICATION!\n");
+
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [id:%llu/%d]\n", spdk_thread_get_id(_spdk_thread), spdk_thread_get_count());
 
     app_argv_t* _argv = (app_argv_t*)cb;
-    printf("start_app!\n");
     for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
         *core = (i + 1);
         struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)core, nullptr);
         spdk_event_call(event);
+    }
+
+    for (int i = 0; i < 5; i++) {
+        int* _argv = (int*)malloc(sizeof(int));
+        *_argv = i;
+        uint64_t _time = i * 100000;
+        printf("poller_register [core_id:%d][time:%llu]!\n", i, _time);
+        struct spdk_poller* _poller = spdk_poller_register(poller_function, (void*)_argv, _time);
     }
 }
 
