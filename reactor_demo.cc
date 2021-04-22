@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 20:38:33
+ * @LastEditTime: 2021-04-22 21:05:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -23,13 +23,7 @@
 #include "spdk/event.h"
 #include "spdk/thread.h"
 
-struct core_argv_t {
-public:
-    std::queue<struct spdk_poller*> vec_poller;
-    struct spdk_thread* thread;
-};
-
-static core_argv_t g_core_argv[128];
+static std::queue<struct spdk_poller*> g_thread_poller_map[128];
 
 int poller_function(void* argv)
 {
@@ -42,28 +36,37 @@ void start_event(void* arg1, void* arg2)
     int _core_id = spdk_env_get_current_core();
     printf("Fuck you, man! start_event [core_%d].\n", _core_id);
 
-    // create thread
-    char _name[128];
-    sprintf(_name, "%d", _core_id);
-    g_core_argv[_core_id].thread = spdk_thread_create(_name, NULL);
-    spdk_set_thread(g_core_argv[_core_id].thread);
+    if (_core_id != spdk_env_get_first_core()) {
+        // create thread
+        char _name[128];
+        sprintf(_name, "%d", _core_id);
+        struct spdk_thread* _thread = spdk_thread_create(_name, NULL);
+        spdk_set_thread(_thread);
 
-    // poller register
-    uint64_t _time = 500000UL;
-    printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
-    struct spdk_poller* _poller = spdk_poller_register(poller_function, arg1, _time);
-    g_core_argv[_core_id].vec_poller.push(_poller);
-    assert(_poller != nullptr);
+        // poller register
+        uint64_t _time = 800000UL;
+        printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
+        struct spdk_poller* _poller = spdk_poller_register(poller_function, arg1, _time);
+        assert(_poller != nullptr);
+        g_thread_poller_map[spdk_thread_get_id(spdk_get_thread())].push(_poller);
+    } else {
+        // poller register
+        uint64_t _time = 800000UL;
+        printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
+        struct spdk_poller* _poller = spdk_poller_register(poller_function, arg1, _time);
+        assert(_poller != nullptr);
+        g_thread_poller_map[spdk_thread_get_id(spdk_get_thread())].push(_poller);
+    }
 }
 
 void stop_event(void* arg1, void* arg2)
 {
-    printf("Fuck you, man! stop_event [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
-    int _core_id = spdk_env_get_current_core();
-    while (!g_core_argv[_core_id].vec_poller.empty()) {
-        struct spdk_poller* __poller = g_core_argv[_core_id].vec_poller.front();
-        g_core_argv[_core_id].vec_poller.pop();
-        spdk_poller_unregister(&__poller);
+    int _thread_id = spdk_thread_get_id(spdk_get_thread());
+    printf("Fuck you, man! stop_event [thread%d/core%d]\n", _thread_id, spdk_env_get_current_core());
+    while (!g_thread_poller_map[_thread_id].empty()) {
+        struct spdk_poller* _poller = g_thread_poller_map[_thread_id].front();
+        g_thread_poller_map[_thread_id].pop();
+        spdk_poller_unregister(&_poller);
     }
     spdk_thread_exit(spdk_get_thread());
 }
@@ -72,17 +75,15 @@ void start_app(void* cb)
 {
     printf("START APPLICATION!\n");
 
-    int i, v;
+    int i;
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [core_count:%d]\n", spdk_env_get_core_count());
 
     SPDK_ENV_FOREACH_CORE(i)
     {
-        if (i != spdk_env_get_first_core()) {
-            struct spdk_event* event = spdk_event_allocate(i, start_event, nullptr, nullptr);
-            spdk_event_call(event);
-        }
+        struct spdk_event* event = spdk_event_allocate(i, start_event, nullptr, nullptr);
+        spdk_event_call(event);
     }
 }
 
@@ -94,10 +95,6 @@ void stop_app()
         if (i != spdk_env_get_first_core()) {
             struct spdk_event* event = spdk_event_allocate(i, stop_event, nullptr, nullptr);
             spdk_event_call(event);
-            while (!spdk_thread_is_exited(g_core_argv[i].thread)) {
-            }
-            printf("FREE OK!\n");
-            // spdk_thread_destroy(g_core_argv[i].thread);
         }
     }
     spdk_app_stop(0);
