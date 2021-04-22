@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 19:54:25
+ * @LastEditTime: 2021-04-22 19:56:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -77,12 +77,13 @@ void start_app(void* cb)
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [core_count:%d]\n", spdk_env_get_core_count());
 
-    core_argv_t _core_argv[128];
+    core_argv_t* _core_argv[128];
     SPDK_ENV_FOREACH_CORE(i)
     {
         if (i != spdk_env_get_first_core()) {
-            _core_argv[i].id = i;
-            struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)&_core_argv[i], nullptr);
+            _core_argv[i] = (core_argv_t*)malloc(sizeof(core_argv_t));
+            _core_argv[i]->id = i;
+            struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)_core_argv[i], nullptr);
             spdk_event_call(event);
         }
     }
@@ -91,7 +92,7 @@ void start_app(void* cb)
     SPDK_ENV_FOREACH_CORE(i)
     {
         if (i != spdk_env_get_first_core()) {
-            struct spdk_event* event = spdk_event_allocate(i, stop_event, (void*)&_core_argv[i], nullptr);
+            struct spdk_event* event = spdk_event_allocate(i, stop_event, (void*)_core_argv[i], nullptr);
             spdk_event_call(event);
         }
     }
