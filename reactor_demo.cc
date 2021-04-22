@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 16:21:25
+ * @LastEditTime: 2021-04-22 16:21:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -53,11 +53,11 @@ void start_event(void* arg1, void* arg2)
 void start_app(void* cb)
 {
     printf("START APPLICATION!\n");
-
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
     printf("spdk_thread [id:%llu/%d]\n", spdk_thread_get_id(_spdk_thread), spdk_thread_get_count());
 
+    // event
     app_argv_t* _argv = (app_argv_t*)cb;
     for (int i = 0; i < _argv->num_reactor; i++) { // master reactor可以在其他核上发起一个事件
         int* core = (int*)malloc(sizeof(int));
@@ -66,6 +66,7 @@ void start_app(void* cb)
         spdk_event_call(event);
     }
 
+    // poller
     for (int i = 0; i < 5; i++) {
         int* _argv = (int*)malloc(sizeof(int));
         *_argv = i;
