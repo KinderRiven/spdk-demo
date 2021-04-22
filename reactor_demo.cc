@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 21:15:48
+ * @LastEditTime: 2021-04-22 21:18:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -59,7 +59,13 @@ void stop_event(void* arg1, void* arg2)
         g_thread_poller_map[_thread_id].pop();
         spdk_poller_unregister(&_poller);
     }
-    spdk_thread_exit(spdk_get_thread());
+
+    struct spdk_thread* _thread = spdk_get_thread();
+    spdk_thread_exit(_thread);
+    if (spdk_thread_is_exited(_thread)) {
+        printf("thread%d is existed, so we destory it!\n", spdk_thread_get_id(_thread));
+        spdk_thread_destroy(_thread);
+    }
 }
 
 void start_app(void* cb)
