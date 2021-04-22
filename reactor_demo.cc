@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 19:52:32
+ * @LastEditTime: 2021-04-22 19:54:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -62,6 +62,12 @@ void start_event(void* arg1, void* arg2)
     assert(_argv->_poller != nullptr);
 }
 
+void stop_event(void* arg1, void* arg2)
+{
+    core_argv_t* _argv = (core_argv_t*)arg1;
+    spdk_poller_unregister(&_argv->_poller);
+}
+
 void start_app(void* cb)
 {
     printf("START APPLICATION!\n");
@@ -75,8 +81,6 @@ void start_app(void* cb)
     SPDK_ENV_FOREACH_CORE(i)
     {
         if (i != spdk_env_get_first_core()) {
-            int* __core = (int*)malloc(sizeof(int));
-            *__core = i;
             _core_argv[i].id = i;
             struct spdk_event* event = spdk_event_allocate(i, start_event, (void*)&_core_argv[i], nullptr);
             spdk_event_call(event);
@@ -84,6 +88,13 @@ void start_app(void* cb)
     }
 
     scanf("%d", &v);
+    SPDK_ENV_FOREACH_CORE(i)
+    {
+        if (i != spdk_env_get_first_core()) {
+            struct spdk_event* event = spdk_event_allocate(i, stop_event, (void*)&_core_argv[i], nullptr);
+            spdk_event_call(event);
+        }
+    }
 }
 
 int main(int argc, char** argv)
