@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 20:30:15
+ * @LastEditTime: 2021-04-22 20:35:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -26,6 +26,7 @@
 struct core_argv_t {
 public:
     std::queue<struct spdk_poller*> vec_poller;
+    struct spdk_thread* thread;
 };
 
 static core_argv_t g_core_argv[128];
@@ -44,8 +45,8 @@ void start_event(void* arg1, void* arg2)
     // create thread
     char _name[128];
     sprintf(_name, "%d", _core_id);
-    struct spdk_thread* _thread = spdk_thread_create(_name, NULL);
-    spdk_set_thread(_thread);
+    g_core_argv[_core_id].thread = spdk_thread_create(_name, NULL);
+    spdk_set_thread(g_core_argv[_core_id].thread);
 
     // poller register
     uint64_t _time = 500000UL;
@@ -58,7 +59,6 @@ void start_event(void* arg1, void* arg2)
 void stop_event(void* arg1, void* arg2)
 {
     printf("Fuck you, man! stop_event [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
-
     int _core_id = spdk_env_get_current_core();
     while (!g_core_argv[_core_id].vec_poller.empty()) {
         struct spdk_poller* __poller = g_core_argv[_core_id].vec_poller.front();
@@ -88,16 +88,15 @@ void start_app(void* cb)
 
 void stop_app()
 {
-#if 0
     int i;
     SPDK_ENV_FOREACH_CORE(i)
     {
         if (i != spdk_env_get_first_core()) {
             struct spdk_event* event = spdk_event_allocate(i, stop_event, nullptr, nullptr);
             spdk_event_call(event);
+            spdk_thread_destroy(g_core_argv[i].thread);
         }
     }
-#endif
     spdk_app_stop(0);
 }
 
