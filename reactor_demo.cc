@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 19:50:32
+ * @LastEditTime: 2021-04-22 19:51:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -34,10 +34,10 @@ public:
     struct spdk_thread* _thread;
 };
 
-int poller_function(void* num)
+int poller_function(void* argv)
 {
-    int p = *((int*)num);
-    printf("poller_function [%d]\n", p);
+    core_argv_t* _argv = (core_argv_t*)argv;
+    printf("poller_function [%d]\n", _argv->id);
     return 0;
 }
 
