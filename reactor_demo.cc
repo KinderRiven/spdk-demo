@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 21:14:07
+ * @LastEditTime: 2021-04-22 21:14:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -71,7 +71,7 @@ void start_app(void* cb)
 
     SPDK_ENV_FOREACH_CORE(i)
     {
-        if (spdk_env_get_current_core() != spdk_env_get_first_core()) {
+        if (i != spdk_env_get_first_core()) {
             struct spdk_event* event = spdk_event_allocate(i, start_event, nullptr, nullptr);
             spdk_event_call(event);
         }
