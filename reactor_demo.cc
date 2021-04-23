@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-22 21:19:58
+ * @LastEditTime: 2021-04-23 13:55:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -23,7 +23,12 @@
 #include "spdk/event.h"
 #include "spdk/thread.h"
 
-static std::queue<struct spdk_poller*> g_thread_poller_map[128];
+struct spdk_thread_context_t {
+public:
+    std::queue<struct spdk_poller*> q_poller;
+};
+
+spdk_thread_context_t g_spdk_ctx[128];
 
 int poller_function(void* argv)
 {
@@ -47,7 +52,7 @@ void start_event(void* arg1, void* arg2)
     printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
     struct spdk_poller* _poller = spdk_poller_register(poller_function, arg1, _time);
     assert(_poller != nullptr);
-    g_thread_poller_map[spdk_thread_get_id(spdk_get_thread())].push(_poller);
+    g_spdk_ctx[spdk_thread_get_id(spdk_get_thread())].q_poller.push(_poller);
 }
 
 void stop_event(void* arg1, void* arg2)
@@ -55,9 +60,10 @@ void stop_event(void* arg1, void* arg2)
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
     printf("Fuck you, man! stop_event [thread%d/core%d]\n", _thread_id, spdk_env_get_current_core());
 
-    while (!g_thread_poller_map[_thread_id].empty()) {
-        struct spdk_poller* _poller = g_thread_poller_map[_thread_id].front();
-        g_thread_poller_map[_thread_id].pop();
+    // 每个线程退出的时候必须注销自己注册过的poller
+    while (!g_spdk_ctx[_thread_id].q_poller.empty()) {
+        struct spdk_poller* _poller = g_spdk_ctx[_thread_id].q_poller.front();
+        g_spdk_ctx[_thread_id].q_poller.pop();
         spdk_poller_unregister(&_poller);
     }
 
