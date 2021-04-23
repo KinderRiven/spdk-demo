@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-23 13:55:36
+ * @LastEditTime: 2021-04-23 16:49:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -30,10 +30,15 @@ public:
 
 spdk_thread_context_t g_spdk_ctx[128];
 
-int poller_function(void* argv)
+int timer_poller_function(void* argv)
 {
-    printf("poller_function [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
+    printf("timer_poller_function [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
     return 0;
+}
+
+int polling_poller_function(void* argv)
+{
+    printf("polling_poller_function [thread%d/core%d]\n", spdk_thread_get_id(spdk_get_thread()), spdk_env_get_current_core());
 }
 
 void start_event(void* arg1, void* arg2)
@@ -48,11 +53,20 @@ void start_event(void* arg1, void* arg2)
     spdk_set_thread(_thread);
 
     // poller register
-    uint64_t _time = 800000UL;
-    printf("poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
-    struct spdk_poller* _poller = spdk_poller_register(poller_function, arg1, _time);
-    assert(_poller != nullptr);
-    g_spdk_ctx[spdk_thread_get_id(spdk_get_thread())].q_poller.push(_poller);
+    {
+        uint64_t _time = 800000UL;
+        printf("timer_poller_register [core_id:%d][time:%llu]!\n", _core_id, _time);
+        struct spdk_poller* _poller = spdk_poller_register(timer_poller_function, arg1, _time);
+        assert(_poller != nullptr);
+        g_spdk_ctx[spdk_thread_get_id(spdk_get_thread())].q_poller.push(_poller);
+    }
+
+    {
+        printf("polling_poller_register [core_id:%d]!\n", _core_id);
+        struct spdk_poller* _poller = spdk_poller_register(polling_poller_function, arg1, 0);
+        assert(_poller != nullptr);
+        g_spdk_ctx[spdk_thread_get_id(spdk_get_thread())].q_poller.push(_poller);
+    }
 }
 
 void stop_event(void* arg1, void* arg2)
