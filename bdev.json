@@ -5,13 +5,6 @@
       "subsystem": "bdev",
       "config": [
         {
-          "params": {
-            "bdev_io_pool_size": 65535,
-            "bdev_io_cache_size": 1024
-          },
-          "method": "bdev_set_options"
-        },
-        {
             "params": {
                 "trtype": "PCIe",
                 "name": "Nvme0",
