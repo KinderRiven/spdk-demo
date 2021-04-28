@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 22:18:24
+ * @LastEditTime: 2021-04-28 22:22:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -48,6 +48,11 @@ static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
     _ctx->io_cnt++;
 }
 
+static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev, void* event_ctx)
+{
+    printf("bdev_event_cb [%d]\n", type);
+}
+
 int poller_bdev_read(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
@@ -75,7 +80,6 @@ void start_io_event(void* bdev, void* desc)
     int _core_id = spdk_env_get_current_core();
     printf("Fuck you, man! start_event [core_%d].\n", _core_id);
 
-    // create thread for each core
     char _name[128];
     sprintf(_name, "%d", _core_id);
     struct spdk_thread* _thread = spdk_thread_create(_name, nullptr);
@@ -146,7 +150,7 @@ void start_app(void* cb)
         exit(1);
     } else {
         printf("spdk_bdev_open [nvme][bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
-        _rc = spdk_bdev_open_ext("Nvme0n1", true, nullptr, nullptr, &_desc);
+        _rc = spdk_bdev_open_ext("Nvme0n1", true, bdev_event_cb, nullptr, &_desc);
         if (_rc) {
             printf("spdk_bdev_open_ext failed!\n");
             exit(1);
