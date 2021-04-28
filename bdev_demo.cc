@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 18:01:57
+ * @LastEditTime: 2021-04-28 18:06:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -125,13 +125,14 @@ void start_app(void* cb)
     spdk_bdev_get_opts(&__opts, sizeof(__opts));
     printf("PoolSize:%d\n", __opts.bdev_io_pool_size);
 
-    // _bdev = spdk_bdev_first();
-    // while (_bdev != nullptr) {
-    //     printf("module_name [%s]\n", spdk_bdev_get_module_name(_bdev));
-    //     _bdev = spdk_bdev_next(_bdev);
-    // }
+    _bdev = spdk_bdev_first();
+    while (_bdev != nullptr) {
+        printf("module_name [%s]\n", spdk_bdev_get_module_name(_bdev));
+        _bdev = spdk_bdev_next(_bdev);
+    }
 
-    _bdev = spdk_bdev_get_by_name("Malloc0");
+    // _bdev = spdk_bdev_get_by_name("Malloc0");
+    _bdev = spdk_bdev_get_by_name("Nvme0");
     if (_bdev == nullptr) {
         printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
         exit(1);
