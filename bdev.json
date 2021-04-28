@@ -13,7 +13,7 @@
           "name": "Nvme0",
           "traddr": "0000:86:00.0"
           }
-        }
+        },
         {
           "method": "bdev_malloc_create",
           "params": {
