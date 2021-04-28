@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 22:29:30
+ * @LastEditTime: 2021-04-28 22:33:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -74,6 +74,7 @@ int poller_clean_cq(void* argv)
 
 void start_io_event(void* bdev, void* desc)
 {
+#if 0
     struct spdk_bdev* _bdev = (struct spdk_bdev*)bdev;
     struct spdk_bdev_desc* _desc = (struct spdk_bdev_desc*)desc;
 
@@ -114,6 +115,7 @@ void start_io_event(void* bdev, void* desc)
     _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_thread_id], 0);
     assert(_poller != nullptr);
     g_spdk_ctx[_thread_id].q_poller.push(_poller);
+#endif
 }
 
 void stop_event(void* arg1, void* arg2)
@@ -137,6 +139,7 @@ void start_app(void* cb)
     int _rc;
     struct spdk_bdev* _bdev;
     struct spdk_bdev_desc* _desc;
+    struct spdk_io_channel* _io_channel;
 
     struct spdk_bdev_opts __opts;
     spdk_bdev_get_opts(&__opts, sizeof(__opts));
@@ -160,6 +163,13 @@ void start_app(void* cb)
             exit(1);
         } else {
             printf("spdk_bdev_open_ext ok!\n");
+            _io_channel = spdk_bdev_get_io_channel(_desc);
+            if (_io_channel != nullptr) {
+                printf("spdk_bdev_get_io_channel ok!\n");
+            } else {
+                printf("spdk_bdev_get_io_channel failed!\n");
+                exit(1);
+            }
         }
     }
 
