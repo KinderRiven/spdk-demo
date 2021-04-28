@@ -1,18 +1,14 @@
 // https://spdk.io/doc/jsonrpc.html
 {
-  "subsystems": [
-    {
-      "subsystem": "bdev",
-      "config": [
-        {
-            "params": {
-                "trtype": "PCIe",
-                "name": "Nvme0",
-                "traddr": "0000:86:00.0"
-            },
-            "method": "bdev_nvme_attach_controller"
-        }
-      ]
-    }
+  "subsystem": "bdev",
+  "config": [
+      {
+        "params": {
+        "trtype": "PCIe",
+        "name": "Nvme0",
+        "traddr": "0000:86:00.0"
+        },
+        "method": "bdev_nvme_attach_controller"
+      }
   ]
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 17:14:39
+ * @LastEditTime: 2021-04-28 17:28:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -23,7 +23,7 @@
 #include "spdk/event.h"
 #include "spdk/thread.h"
 
-// rpc.py bdev_nvme_attach_controller -b NVMe0 -t PCIe -a 0000:86:00.0
+// ./rpc.py bdev_nvme_attach_controller -b Nvme0 -t PCIe -a 0000:86:00.0
 
 struct spdk_thread_context_t {
 public:
