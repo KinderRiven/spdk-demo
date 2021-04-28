@@ -5,6 +5,13 @@
       "subsystem": "bdev",
       "config": [
         {
+          "params": {
+            "bdev_io_pool_size": 65536,
+            "bdev_io_cache_size": 0
+          },
+          "method": "bdev_set_options"
+        },
+        {
             "params": {
                 "trtype": "PCIe",
                 "traddr": "0000:86:00.0",

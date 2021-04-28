@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 16:21:04
+ * @LastEditTime: 2021-04-28 16:31:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -46,8 +46,8 @@ int poller_bdev_read(void* argv)
 int poller_bdev_write(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
-    // int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
-    // assert(_rc == 0);
+    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
+    assert(_rc == 0);
 }
 
 int poller_clean_cq(void* argv)
