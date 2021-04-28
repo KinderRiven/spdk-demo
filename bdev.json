@@ -1,4 +1,5 @@
 // https://spdk.io/doc/jsonrpc.html
+// https://blog.csdn.net/weixin_37097605/article/details/112301001
 // ./script/gen_nvme --json
 {
   "subsystem": "bdev",
