@@ -1,6 +1,15 @@
+/*
+ * @Author: your name
+ * @Date: 2020-09-17 15:32:04
+ * @LastEditTime: 2021-04-28 15:30:41
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: /spdk-demo/reactor_demo.cc
+ */
 #include <assert.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <queue>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,91 +21,163 @@
 #include "spdk/bdev.h"
 #include "spdk/env.h"
 #include "spdk/event.h"
-#include "spdk/nvme.h"
-#include "spdk/stdinc.h"
-#include "spdk/vmd.h"
+#include "spdk/thread.h"
 
-char* g_bdev_name;
-
-struct app_msg_t {
+struct spdk_thread_context_t {
 public:
-    char* bdev_name;
-};
-
-void write_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
-{
-    printf("[write_callback:%d]\n", success);
-}
-
-void start_app(void* cb)
-{
-    int rc;
-    uint32_t blk_size;
-    uint32_t buf_align;
-    struct app_msg_t* msg = (struct app_msg_t*)cb;
+    void* dma_buf;
     struct spdk_bdev* bdev;
     struct spdk_bdev_desc* desc;
     struct spdk_io_channel* channel;
 
-    printf(">>>>[start_thread(0x%llx)]\n", (uint64_t)cb);
-    bdev = spdk_bdev_get_by_name(msg->bdev_name);
-    printf("    [bdev:%s|%llx]\n", msg->bdev_name, (uint64_t)bdev);
-    if (bdev == nullptr) {
-        printf("bad bdev!\n");
-        exit(0);
-    }
+public:
+    uint64_t thread_id;
+    uint32_t io_depth;
+    size_t block_size;
+    std::queue<struct spdk_poller*> q_poller;
+};
 
-    rc = spdk_bdev_open(bdev, true, nullptr, nullptr, &desc);
-    if (rc) {
-        printf("bad bdev open!\n");
-        exit(0);
-    }
+spdk_thread_context_t g_spdk_ctx[128];
 
-    channel = spdk_bdev_get_io_channel(desc);
-    if (channel == nullptr) {
-        printf("bad channel!\n");
-        exit(0);
-    }
-
-    blk_size = spdk_bdev_get_block_size(bdev);
-    buf_align = spdk_bdev_get_buf_align(bdev);
-    void* buff = spdk_dma_zmalloc(blk_size, buf_align, nullptr);
-    printf("[blk_size:%d][buf_align:%d][buff:%llx]\n", blk_size, buf_align, (uint64_t)buff);
-
-    rc = spdk_bdev_write(desc, channel, buff, 0, blk_size, write_cb, nullptr);
-    printf("%d\n", rc);
+int poller_bdev_read(void* argv)
+{
 }
 
-int bdev_parse_arg(int ch, char* arg)
+int poller_bdev_write(void* argv)
 {
-    printf(">>>>[bdev_parse_arg(%c)-(%s)]\n", ch, arg);
-    g_bdev_name = arg;
-    return 0;
+    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    // int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
+    // assert(_rc == 0);
 }
 
-void bdev_usage()
+int poller_clean_cq(void* argv)
 {
-    printf(">>>>[bdev_usage]\n");
+    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+}
+
+void start_io_event(void* bdev, void* desc)
+{
+    struct spdk_bdev* _bdev = (struct spdk_bdev*)bdev;
+    struct spdk_bdev_desc* _desc = (struct spdk_bdev_desc*)desc;
+
+    int _core_id = spdk_env_get_current_core();
+    printf("Fuck you, man! start_event [core_%d].\n", _core_id);
+
+    // create thread for each core
+    char _name[128];
+    sprintf(_name, "%d", _core_id);
+    struct spdk_thread* _thread = spdk_thread_create(_name, nullptr);
+    spdk_set_thread(_thread);
+
+    uint32_t _thread_id = spdk_thread_get_id(spdk_get_thread());
+    g_spdk_ctx[_thread_id].thread_id = _thread_id;
+    g_spdk_ctx[_thread_id].bdev = _bdev;
+    g_spdk_ctx[_thread_id].desc = _desc;
+    g_spdk_ctx[_thread_id].channel = spdk_bdev_get_io_channel(_desc);
+    g_spdk_ctx[_thread_id].dma_buf = spdk_dma_zmalloc(g_spdk_ctx->block_size, 4096UL, nullptr);
+
+    if (g_spdk_ctx[_thread_id].channel == nullptr) {
+        printf("spdk_bdev_get_io_channe failed!\n");
+        exit(1);
+    }
+    if (g_spdk_ctx[_thread_id].dma_buf == nullptr) {
+        printf("spdk_dma_zmalloc failed!\n");
+        exit(1);
+    }
+
+    {
+        printf("polling_poller_register [core_id:%d]!\n", _core_id);
+        struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_thread_id], 0);
+        assert(_poller != nullptr);
+        g_spdk_ctx[_thread_id].q_poller.push(_poller);
+    }
+    {
+        printf("polling_poller_register [core_id:%d]!\n", _core_id);
+        struct spdk_poller* _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_thread_id], 0);
+        assert(_poller != nullptr);
+        g_spdk_ctx[_thread_id].q_poller.push(_poller);
+    }
+}
+
+void stop_event(void* arg1, void* arg2)
+{
+    int _thread_id = spdk_thread_get_id(spdk_get_thread());
+    printf("Fuck you, man! stop_event [thread%d/core%d]\n", _thread_id, spdk_env_get_current_core());
+
+    // 每个线程退出的时候必须注销自己注册过的poller
+    while (!g_spdk_ctx[_thread_id].q_poller.empty()) {
+        struct spdk_poller* _poller = g_spdk_ctx[_thread_id].q_poller.front();
+        g_spdk_ctx[_thread_id].q_poller.pop();
+        spdk_poller_unregister(&_poller);
+    }
+
+    struct spdk_thread* _thread = spdk_get_thread();
+    spdk_thread_exit(_thread);
+}
+
+void start_app(void* cb)
+{
+    int _rc;
+    struct spdk_bdev* _bdev;
+    struct spdk_bdev_desc* _desc;
+    _bdev = spdk_bdev_get_by_name("Nvme2");
+    _rc = spdk_bdev_open(_bdev, true, nullptr, nullptr, &_desc);
+
+    if (_rc) {
+        printf("spdk_bdev_open failed!\n");
+        exit(1);
+    }
+
+    int i;
+    struct spdk_thread* _spdk_thread;
+    _spdk_thread = spdk_get_thread();
+    printf("[START APPLICATION!][core_count:%d/%d]\n", spdk_env_get_current_core(), spdk_env_get_core_count());
+
+    SPDK_ENV_FOREACH_CORE(i)
+    {
+        if (i != spdk_env_get_first_core()) {
+            struct spdk_event* event = spdk_event_allocate(i, start_io_event, (void*)_bdev, (void*)_desc);
+            spdk_event_call(event);
+        }
+    }
+}
+
+void stop_app()
+{
+    int i;
+    struct spdk_thread* _spdk_thread;
+    _spdk_thread = spdk_get_thread();
+    printf("[STOP APPLICATION!][core_count:%d/%d]\n", spdk_env_get_current_core(), spdk_env_get_core_count());
+
+    SPDK_ENV_FOREACH_CORE(i)
+    {
+        if (i != spdk_env_get_first_core()) {
+            struct spdk_event* event = spdk_event_allocate(i, stop_event, nullptr, nullptr);
+            spdk_event_call(event);
+        }
+    }
+    spdk_app_stop(0);
 }
 
 int main(int argc, char** argv)
 {
-    int rc;
-    struct app_msg_t app_msg;
-    struct spdk_app_opts opts = {};
+    int _rc;
+    struct spdk_app_opts _app_opts = {};
 
-    spdk_app_opts_init(&opts);
-    opts.name = "bdev-example";
+    // 1.参数化参数
+    spdk_app_opts_init(&_app_opts, sizeof(_app_opts));
+    _app_opts.name = "FuckYouMan";
+    _app_opts.shutdown_cb = stop_app;
 
-    if ((rc = spdk_app_parse_args(argc, argv, &opts, "b:", NULL, bdev_parse_arg, bdev_usage)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
+    // 2.参数解析
+    if ((_rc = spdk_app_parse_args(argc, argv, &_app_opts, nullptr, nullptr, nullptr, nullptr)) != SPDK_APP_PARSE_ARGS_SUCCESS) {
         printf(">>>>[spdk_app_parse_arg error!]\n");
-        exit(rc);
+        exit(_rc);
     }
 
-    app_msg.bdev_name = g_bdev_name;
-    printf("OPT [name:%s][file_name:%s]\n", opts.name, opts.config_file);
-    printf("APP [name:%s]\n", app_msg.bdev_name);
-    rc = spdk_app_start(&opts, start_app, (void*)&app_msg);
-    spdk_app_stop(rc);
+    printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
+        _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
+    _rc = spdk_app_start(&_app_opts, start_app, nullptr);
+    spdk_app_fini();
     return 0;
 }
