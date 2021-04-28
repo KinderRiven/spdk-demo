@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 17:46:23
+ * @LastEditTime: 2021-04-28 17:51:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -121,12 +121,13 @@ void start_app(void* cb)
     struct spdk_bdev* _bdev;
     struct spdk_bdev_desc* _desc;
 
-    // _bdev = spdk_bdev_get_by_name("Nvme0");
-    _bdev = spdk_bdev_first();
-    while (_bdev != nullptr) {
-        printf("module_name [%s]\n", spdk_bdev_get_module_name(_bdev));
-        _bdev = spdk_bdev_next(_bdev);
-    }
+    _bdev = spdk_bdev_get_by_name("nvme");
+
+    // _bdev = spdk_bdev_first();
+    // while (_bdev != nullptr) {
+    //     printf("module_name [%s]\n", spdk_bdev_get_module_name(_bdev));
+    //     _bdev = spdk_bdev_next(_bdev);
+    // }
 
     if (_bdev == nullptr) {
         printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
@@ -138,7 +139,10 @@ void start_app(void* cb)
         printf("spdk_bdev_open failed!\n");
         exit(1);
     } else {
+        struct spdk_bdev_opts __opts;
+        spdk_bdev_get_opts(&__opts, sizeof(__opts));
         printf("spdk_bdev_open [bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
+        printf("pool_size:%d", __opts.bdev_io_pool_size);
     }
 
     int i;
