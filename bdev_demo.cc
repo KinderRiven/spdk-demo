@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 16:10:26
+ * @LastEditTime: 2021-04-28 16:13:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -122,6 +122,12 @@ void start_app(void* cb)
     struct spdk_bdev_desc* _desc;
 
     _bdev = spdk_bdev_get_by_name("NVMe0");
+
+    if (_bdev == nullptr) {
+        printf("spdk_bdev_get_by_name failed!\n");
+        exit(1);
+    }
+
     _rc = spdk_bdev_open(_bdev, true, nullptr, nullptr, &_desc);
 
     if (_rc) {
