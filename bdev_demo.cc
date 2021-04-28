@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 22:22:21
+ * @LastEditTime: 2021-04-28 22:27:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -93,7 +93,8 @@ void start_io_event(void* bdev, void* desc)
     g_spdk_ctx[_thread_id].dma_buf = spdk_dma_zmalloc(g_spdk_ctx->block_size, 4096UL, nullptr);
 
     if (g_spdk_ctx[_thread_id].channel == nullptr) {
-        printf("spdk_bdev_get_io_channe failed!\n");
+        spdk_bdev_close(_desc);
+        SPDK_ERRLOG("spdk_bdev_get_io_channe failed, could not get I/O channel: %s\n", strerror(ENOMEM));
         exit(1);
     }
     if (g_spdk_ctx[_thread_id].dma_buf == nullptr) {
