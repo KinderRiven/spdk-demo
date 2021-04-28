@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 18:19:52
+ * @LastEditTime: 2021-04-28 18:20:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -163,7 +163,6 @@ void start_app(void* cb)
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
     printf("[START APPLICATION!][core_count:%d/%d]\n", spdk_env_get_current_core(), spdk_env_get_core_count());
-
     SPDK_ENV_FOREACH_CORE(i)
     {
         if (i != spdk_env_get_first_core()) {
