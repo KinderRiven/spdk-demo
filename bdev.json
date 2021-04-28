@@ -7,8 +7,8 @@
         {
             "params": {
                 "trtype": "PCIe",
-                "name": "Nvme0",
-                "traddr": "0000:86:00.0"
+                "traddr": "0000:86:00.0",
+                "name": "Nvme0"
             },
             "method": "bdev_nvme_attach_controller"
         }
