@@ -2,15 +2,19 @@
 // https://blog.csdn.net/weixin_37097605/article/details/112301001
 // ./script/gen_nvme --json
 {
-  "subsystem": "bdev",
-  "config": [
-      {
-        "params": {
-        "trtype": "PCIe",
-        "name": "Nvme0",
-        "traddr": "0000:86:00.0"
-        },
-        "method": "bdev_nvme_attach_controller"
-      }
+  "subsystems": [
+    {
+    "subsystem": "bdev",
+    "config": [
+        {
+          "params": {
+          "trtype": "PCIe",
+          "name": "Nvme0",
+          "traddr": "0000:86:00.0"
+          },
+          "method": "bdev_nvme_attach_controller"
+        }
+    ]
+    }
   ]
 }
