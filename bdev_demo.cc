@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 22:12:23
+ * @LastEditTime: 2021-04-28 22:12:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -44,7 +44,7 @@ spdk_thread_context_t g_spdk_ctx[128];
 
 static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
 {
-    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)cb_arg;
     _ctx->io_cnt++;
 }
 
