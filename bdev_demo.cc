@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 17:28:53
+ * @LastEditTime: 2021-04-28 17:42:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -22,8 +22,6 @@
 #include "spdk/env.h"
 #include "spdk/event.h"
 #include "spdk/thread.h"
-
-// ./rpc.py bdev_nvme_attach_controller -b Nvme0 -t PCIe -a 0000:86:00.0
 
 struct spdk_thread_context_t {
 public:
@@ -124,6 +122,7 @@ void start_app(void* cb)
     struct spdk_bdev_desc* _desc;
 
     _bdev = spdk_bdev_get_by_name("Nvme0");
+    _bdev = spdk_bdev_first();
     if (_bdev == nullptr) {
         printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
         exit(1);
