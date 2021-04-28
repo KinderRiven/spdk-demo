@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 18:07:36
+ * @LastEditTime: 2021-04-28 18:18:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -131,8 +131,8 @@ void start_app(void* cb)
         _bdev = spdk_bdev_next(_bdev);
     }
 
-    _bdev = spdk_bdev_get_by_name("Malloc0");
-    // _bdev = spdk_bdev_get_by_name("Nvme0");
+    // _bdev = spdk_bdev_get_by_name("Malloc0");
+    _bdev = spdk_bdev_get_by_name("Nvme0");
     if (_bdev == nullptr) {
         printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
         exit(1);
