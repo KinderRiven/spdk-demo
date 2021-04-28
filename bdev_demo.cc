@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 22:35:22
+ * @LastEditTime: 2021-04-28 22:49:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -143,7 +143,7 @@ void start_app(void* cb)
 
     struct spdk_bdev_opts __opts;
     spdk_bdev_get_opts(&__opts, sizeof(__opts));
-    printf("PoolSize:%d\n", __opts.bdev_io_pool_size);
+    printf("bdev_pool_size:%d\n", __opts.bdev_io_pool_size);
 
     _bdev = spdk_bdev_first();
     while (_bdev != nullptr) {
@@ -153,7 +153,7 @@ void start_app(void* cb)
 
     _bdev = spdk_bdev_get_by_name("Nvme0n1");
     if (_bdev == nullptr) {
-        printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
+        printf("spdk_bdev_get_by_name failed! [Nvme0n1]\n");
         exit(1);
     } else {
         assert(_bdev != nullptr);
