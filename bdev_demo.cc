@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 16:18:55
+ * @LastEditTime: 2021-04-28 16:21:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -123,7 +123,7 @@ void start_app(void* cb)
 
     _bdev = spdk_bdev_get_by_name("Nvme0");
     if (_bdev == nullptr) {
-        printf("spdk_bdev_get_by_name failed!\n");
+        printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
         exit(1);
     }
 
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
     }
 
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
-        _app_opts.name, _app_opts.config_file, _app_opts.reactor_mask, _app_opts.main_core);
+        _app_opts.name, _app_opts.json_config_file, _app_opts.reactor_mask, _app_opts.main_core);
     _rc = spdk_app_start(&_app_opts, start_app, nullptr);
     spdk_app_fini();
     return 0;
