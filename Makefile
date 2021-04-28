@@ -19,10 +19,10 @@ reactor_demo: clean
 	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo  $(LINK_FLAGS) -Wl,--whole-archive $(SPDK_LINK_FLAGS)  $(DPDK_LINK_FLAGS) -Wl,--no-whole-archive $(SPDK_SYSLIB_FLAGS)
 
 bdev_demo: clean
-	$(CC) --std=c++11 bdev_demo.cc -o reactor_demo  $(LINK_FLAGS) -Wl,--whole-archive $(SPDK_LINK_FLAGS)  $(DPDK_LINK_FLAGS) -Wl,--no-whole-archive $(SPDK_SYSLIB_FLAGS)
+	$(CC) --std=c++11 bdev_demo.cc -o bdev_demo  $(LINK_FLAGS) -Wl,--whole-archive $(SPDK_LINK_FLAGS)  $(DPDK_LINK_FLAGS) -Wl,--no-whole-archive $(SPDK_SYSLIB_FLAGS)
 
 clean:
-	rm -rf reactor_demo
+	rm -rf reactor_demo bdev_demo
 
 # reactor_demo: clean
 #	$(CC) --std=c++11 reactor_demo.cc $(LINK_FLAGS) -o reactor_demo -Wl,--no-as-needed $(DPDK_LINK_FLAGS) $(SPDK_LINK_FLAGS) -Wl,--as-needed
