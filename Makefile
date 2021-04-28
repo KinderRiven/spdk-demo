@@ -13,10 +13,13 @@ DPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(DPDK_PKG_CONFIG_PATH)" pkg-config 
 
 LINK_FLAGS := -lpthread -lrt -lnuma -ldl -luuid -lm -lisal
 
-all: reactor_demo
+all: reactor_demo bdev_demo
 
 reactor_demo: clean
 	$(CC) --std=c++11 reactor_demo.cc -o reactor_demo  $(LINK_FLAGS) -Wl,--whole-archive $(SPDK_LINK_FLAGS)  $(DPDK_LINK_FLAGS) -Wl,--no-whole-archive $(SPDK_SYSLIB_FLAGS)
+
+bdev_demo: clean
+	$(CC) --std=c++11 bdev_demo.cc -o reactor_demo  $(LINK_FLAGS) -Wl,--whole-archive $(SPDK_LINK_FLAGS)  $(DPDK_LINK_FLAGS) -Wl,--no-whole-archive $(SPDK_SYSLIB_FLAGS)
 
 clean:
 	rm -rf reactor_demo
