@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 18:39:02
+ * @LastEditTime: 2021-04-28 22:12:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -31,6 +31,9 @@ public:
     struct spdk_io_channel* channel;
 
 public:
+    uint32_t io_cnt = 0;
+
+public:
     uint64_t thread_id;
     uint32_t io_depth;
     size_t block_size;
@@ -39,14 +42,23 @@ public:
 
 spdk_thread_context_t g_spdk_ctx[128];
 
+static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
+{
+    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    _ctx->io_cnt++;
+}
+
 int poller_bdev_read(void* argv)
 {
+    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
+    assert(_rc == 0);
 }
 
 int poller_bdev_write(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
-    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
+    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, io_cb, argv);
     assert(_rc == 0);
 }
 
@@ -85,26 +97,23 @@ void start_io_event(void* bdev, void* desc)
         exit(1);
     }
 
-    {
-        printf("polling_poller_register [core_id:%d]!\n", _core_id);
-        struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_thread_id], 0);
-        assert(_poller != nullptr);
-        g_spdk_ctx[_thread_id].q_poller.push(_poller);
-    }
-    {
-        printf("polling_poller_register [core_id:%d]!\n", _core_id);
-        struct spdk_poller* _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_thread_id], 0);
-        assert(_poller != nullptr);
-        g_spdk_ctx[_thread_id].q_poller.push(_poller);
-    }
+    printf("polling_poller_register [poller_bdev_write][core_id:%d]!\n", _core_id);
+    struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_thread_id], 0);
+    assert(_poller != nullptr);
+    g_spdk_ctx[_thread_id].q_poller.push(_poller);
+
+    printf("polling_poller_register [poller_clean_cq][core_id:%d]!\n", _core_id);
+    _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_thread_id], 0);
+    assert(_poller != nullptr);
+    g_spdk_ctx[_thread_id].q_poller.push(_poller);
 }
 
 void stop_event(void* arg1, void* arg2)
 {
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
-    printf("Fuck you, man! stop_event [thread%d/core%d]\n", _thread_id, spdk_env_get_current_core());
+    printf("Fuck you, man! stop_event [thread%d/core%d][io_cnt:%d]\n",
+        _thread_id, spdk_env_get_current_core(), g_spdk_ctx[_thread_id].io_cnt);
 
-    // 每个线程退出的时候必须注销自己注册过的poller
     while (!g_spdk_ctx[_thread_id].q_poller.empty()) {
         struct spdk_poller* _poller = g_spdk_ctx[_thread_id].q_poller.front();
         g_spdk_ctx[_thread_id].q_poller.pop();
@@ -131,32 +140,15 @@ void start_app(void* cb)
         _bdev = spdk_bdev_next(_bdev);
     }
 
-#if 0
-    _bdev = spdk_bdev_get_by_name("Malloc0");
+    _bdev = spdk_bdev_get_by_name("Nvme0n1");
     if (_bdev == nullptr) {
-        printf("spdk_bdev_get_by_name failed! [Malloc0]\n");
+        printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
         exit(1);
     } else {
         _rc = spdk_bdev_open(_bdev, true, nullptr, nullptr, &_desc);
         if (_rc) {
             printf("spdk_bdev_open failed!\n");
             exit(1);
-        } else {
-            printf("spdk_bdev_open [malloc][bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
-        }
-    }
-
-#endif
-
-    _bdev = spdk_bdev_get_by_name("Nvme0n1");
-    if (_bdev == nullptr) {
-        printf("spdk_bdev_get_by_name failed! [Nvme0]\n");
-        // exit(1);
-    } else {
-        _rc = spdk_bdev_open(_bdev, true, nullptr, nullptr, &_desc);
-        if (_rc) {
-            printf("spdk_bdev_open failed!\n");
-            // exit(1);
         } else {
             printf("spdk_bdev_open [nvme][bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
         }
@@ -189,6 +181,9 @@ void stop_app()
             spdk_event_call(event);
         }
     }
+
+    struct spdk_bdev_desc* _desc = g_spdk_ctx[0].desc;
+    spdk_bdev_close(_desc);
     spdk_app_stop(0);
 }
 
