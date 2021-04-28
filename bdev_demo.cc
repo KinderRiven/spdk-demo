@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-28 16:59:14
+ * @LastEditTime: 2021-04-28 16:59:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -132,7 +132,7 @@ void start_app(void* cb)
         printf("spdk_bdev_open failed!\n");
         exit(1);
     } else {
-        printf("spdk_bdev_open [bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(), spdk_bdev_get_buf_align());
+        printf("spdk_bdev_open [bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
     }
 
     int i;
