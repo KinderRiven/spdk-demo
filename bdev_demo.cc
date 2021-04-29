@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:11:50
+ * @LastEditTime: 2021-04-29 16:17:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -138,6 +138,8 @@ void stop_event(void* arg1, void* arg2)
         g_spdk_ctx[_thread_id].q_poller.pop();
         spdk_poller_unregister(&_poller);
     }
+
+    printf("Free IO Channel.\n");
     spdk_put_io_channel(g_spdk_ctx[_thread_id].channel);
     struct spdk_thread* _thread = spdk_get_thread();
     spdk_thread_exit(_thread);
@@ -200,7 +202,6 @@ void stop_app()
             spdk_event_call(event);
         }
     }
-
     spdk_bdev_close(g_desc);
     spdk_app_stop(0);
 }
