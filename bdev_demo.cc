@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:09:54
+ * @LastEditTime: 2021-04-29 16:11:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -48,8 +48,8 @@ static spdk_thread_context_t g_spdk_ctx[128];
 static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
 {
     assert(success == true);
-    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)cb_arg;
     spdk_bdev_free_io(bdev_io);
+    spdk_dma_free(cb_arg);
 }
 
 static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev, void* event_ctx)
@@ -63,7 +63,7 @@ int poller_bdev_read(void* argv)
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
     printf("%d\n", _ctx->io_cnt);
-    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, argv);
+    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
     if (_rc) {
         printf("spdk_bdev_read failed, %d", _rc);
     }
@@ -76,7 +76,7 @@ int poller_bdev_write(void* argv)
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
     printf("%d\n", _ctx->io_cnt);
-    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, argv);
+    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
     if (_rc) {
         printf("spdk_bdev_write failed, %d", _rc);
     }
