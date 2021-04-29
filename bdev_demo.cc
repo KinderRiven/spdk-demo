@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:58:13
+ * @LastEditTime: 2021-04-29 17:02:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -99,10 +99,9 @@ void start_io_event(void* bdev, void* desc)
 {
     g_num_run_thread++;
 
+    int _core_id = spdk_env_get_current_core();
     struct spdk_bdev* _bdev = (struct spdk_bdev*)bdev;
     struct spdk_bdev_desc* _desc = (struct spdk_bdev_desc*)desc;
-
-    int _core_id = spdk_env_get_current_core();
 
     char _s_cpu_mask[128];
     struct spdk_cpuset* _cpu_mask = spdk_cpuset_alloc();
@@ -135,12 +134,12 @@ void start_io_event(void* bdev, void* desc)
     printf("polling_poller_register [poller_bdev_write][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
     struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_core_id], 0);
     assert(_poller != nullptr);
-    g_spdk_ctx[_thread_id].q_poller.push(_poller);
+    g_spdk_ctx[_core_id].q_poller.push(_poller);
 
     printf("polling_poller_register [poller_clean_cq][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
-    _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_thread_id], 0);
+    _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_core_id], 0);
     assert(_poller != nullptr);
-    g_spdk_ctx[_thread_id].q_poller.push(_poller);
+    g_spdk_ctx[_core_id].q_poller.push(_poller);
 }
 
 void start_app(void* cb)
@@ -188,19 +187,21 @@ void start_app(void* cb)
 
 void stop_io_event(void* arg1, void* arg2)
 {
+    int _core_id = spdk_env_get_current_core();
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
-    printf("stop_event [thread_id:%d/core_id:%d][io_cnt:%d]\n",
-        _thread_id, spdk_env_get_current_core(), g_spdk_ctx[_thread_id].io_cnt);
 
-    while (!g_spdk_ctx[_thread_id].q_poller.empty()) {
-        struct spdk_poller* _poller = g_spdk_ctx[_thread_id].q_poller.front();
-        g_spdk_ctx[_thread_id].q_poller.pop();
+    printf("stop_event [thread_id:%d/core_id:%d][io_cnt:%d]\n",
+        _thread_id, _core_id, g_spdk_ctx[_thread_id].io_cnt);
+
+    while (!g_spdk_ctx[_core_id].q_poller.empty()) {
+        struct spdk_poller* _poller = g_spdk_ctx[_core_id].q_poller.front();
+        g_spdk_ctx[_core_id].q_poller.pop();
         spdk_poller_unregister(&_poller);
     }
 
     printf("free io channel.\n");
-    assert(g_spdk_ctx[_thread_id].channel != nullptr);
-    spdk_put_io_channel(g_spdk_ctx[_thread_id].channel);
+    assert(g_spdk_ctx[_core_id].channel != nullptr);
+    spdk_put_io_channel(g_spdk_ctx[_core_id].channel);
 
     printf("exit thread!\n");
     struct spdk_thread* _thread = spdk_get_thread();
