@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:17:43
+ * @LastEditTime: 2021-04-29 16:18:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -202,6 +202,7 @@ void stop_app()
             spdk_event_call(event);
         }
     }
+    printf("bdev close!\n");
     spdk_bdev_close(g_desc);
     spdk_app_stop(0);
 }
