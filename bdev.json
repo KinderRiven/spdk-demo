@@ -4,8 +4,16 @@
 {
   "subsystems": [
     {
-      "subsystem": "bdev",
-      "config": [
+    "subsystem": "bdev",
+    "config": [
+        {
+          "method": "bdev_nvme_attach_controller",
+          "params": {
+          "trtype": "PCIe",
+          "name": "Nvme0",
+          "traddr": "0000:86:00.0"
+          }
+        },
         {
           "method": "bdev_malloc_create",
           "params": {
@@ -14,7 +22,7 @@
             "block_size": 512
           }
         }
-      ]
+    ]
     }
   ]
 }
