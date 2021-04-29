@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:13:18
+ * @LastEditTime: 2021-04-29 17:14:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -53,7 +53,6 @@ static spdk_core_context_t g_spdk_ctx[128];
 
 static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
 {
-    assert(success == true);
     spdk_bdev_free_io(bdev_io);
     spdk_dma_free(cb_arg);
 }
