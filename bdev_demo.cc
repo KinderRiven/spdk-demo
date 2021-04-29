@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:22:41
+ * @LastEditTime: 2021-04-29 17:26:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -44,6 +44,7 @@ public:
     std::queue<struct spdk_poller*> q_poller;
 };
 
+static bool g_app_stop = false;
 static int g_num_run_thread = 0;
 static int g_app_rc;
 static char g_bdev_name[] = "Nvme0n1";
@@ -191,6 +192,8 @@ void start_app(void* cb)
             spdk_event_call(event);
         }
     }
+
+    while (!g_app_stop) { }
 }
 
 void stop_io_event(void* arg1, void* arg2)
@@ -233,8 +236,7 @@ void stop_app()
 
     printf("bdev close!\n");
     spdk_bdev_close(g_desc);
-    // printf("spdk_app_stop! (%d)\n", g_app_rc);
-    // spdk_app_stop(g_app_rc);
+    g_app_stop = true;
 }
 
 int main(int argc, char** argv)
