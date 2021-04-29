@@ -1,4 +1,6 @@
 #
+#  BSD LICENSE
+#
 #  Copyright (c) Intel Corporation.
 #  All rights reserved.
 #
@@ -29,14 +31,20 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-SPDK_ROOT_DIR := .
-include $(SPDK_ROOT_DIR)/mk/spdk.common.mk
-include $(SPDK_ROOT_DIR)/mk/spdk.modules.mk
+ALL_DEPDIRS := $(patsubst DEPDIRS-%,%,$(filter DEPDIRS-%,$(.VARIABLES)))
 
-APP = hello_bdev
+define depdirs_rule
+$(DEPDIRS-$(1)):
 
-C_SRCS := hello_bdev.c
+$(1): | $(DEPDIRS-$(1))
 
-SPDK_LIB_LIST = $(ALL_MODULES_LIST) event_bdev
+endef
 
-echo $(SPDK_LIB_LIST)
+$(DIRS-y) :
+	$(Q)$(MAKE) -C $@ S=$S$(S:%=/)$@ $(MAKECMDGOALS)
+
+$(foreach dir,$(ALL_DEPDIRS),$(eval $(call depdirs_rule,$(dir))))
+
+install: all $(DIRS-y)
+
+uninstall: $(DIRS-y)

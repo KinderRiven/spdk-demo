@@ -1,4 +1,6 @@
 #
+#  BSD LICENSE
+#
 #  Copyright (c) Intel Corporation.
 #  All rights reserved.
 #
@@ -29,14 +31,33 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-SPDK_ROOT_DIR := .
-include $(SPDK_ROOT_DIR)/mk/spdk.common.mk
-include $(SPDK_ROOT_DIR)/mk/spdk.modules.mk
+include $(SPDK_ROOT_DIR)/mk/spdk.app_vars.mk
 
-APP = hello_bdev
+# Plugins go into build/example/
+FIO_PLUGIN := $(SPDK_ROOT_DIR)/build/fio/$(notdir $(FIO_PLUGIN))
 
-C_SRCS := hello_bdev.c
+LIBS += $(SPDK_LIB_LINKER_ARGS)
 
-SPDK_LIB_LIST = $(ALL_MODULES_LIST) event_bdev
+CFLAGS += -I$(CONFIG_FIO_SOURCE_DIR)
+LDFLAGS += -shared -rdynamic -Wl,-z,nodelete
 
-echo $(SPDK_LIB_LIST)
+CLEAN_FILES = $(FIO_PLUGIN)
+
+all : $(FIO_PLUGIN)
+	@:
+
+install: empty_rule
+
+uninstall: empty_rule
+
+# To avoid overwriting warning
+empty_rule:
+	@:
+
+$(FIO_PLUGIN) : $(OBJS) $(SPDK_LIB_FILES) $(ENV_LIBS)
+	$(LINK_C)
+
+clean :
+	$(CLEAN_C) $(CLEAN_FILES)
+
+include $(SPDK_ROOT_DIR)/mk/spdk.deps.mk

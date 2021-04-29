@@ -1,4 +1,6 @@
 #
+#  BSD LICENSE
+#
 #  Copyright (c) Intel Corporation.
 #  All rights reserved.
 #
@@ -28,15 +30,10 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
-SPDK_ROOT_DIR := .
-include $(SPDK_ROOT_DIR)/mk/spdk.common.mk
-include $(SPDK_ROOT_DIR)/mk/spdk.modules.mk
-
-APP = hello_bdev
-
-C_SRCS := hello_bdev.c
-
-SPDK_LIB_LIST = $(ALL_MODULES_LIST) event_bdev
-
-echo $(SPDK_LIB_LIST)
+LDFLAGS += \
+	-Wl,--wrap,calloc \
+	-Wl,--wrap,pthread_mutexattr_init \
+	-Wl,--wrap,pthread_mutex_init \
+	-Wl,--wrap,recvmsg \
+	-Wl,--wrap,sendmsg \
+	-Wl,--wrap,writev

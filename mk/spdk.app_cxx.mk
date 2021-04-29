@@ -1,4 +1,6 @@
 #
+#  BSD LICENSE
+#
 #  Copyright (c) Intel Corporation.
 #  All rights reserved.
 #
@@ -28,15 +30,40 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+include $(SPDK_ROOT_DIR)/mk/spdk.app_vars.mk
 
-SPDK_ROOT_DIR := .
-include $(SPDK_ROOT_DIR)/mk/spdk.common.mk
-include $(SPDK_ROOT_DIR)/mk/spdk.modules.mk
+# Applications in app/ go into build/bin/.
+# Applications in examples/ go into build/examples/.
+# Use findstring to identify if the current directory is in the app
+# directory. If it is, change the APP location to build.
+APP_NAME := $(notdir $(APP))
+ifneq (,$(findstring $(SPDK_ROOT_DIR)/app,$(CURDIR)))
+	APP := $(APP_NAME:%=$(SPDK_ROOT_DIR)/build/bin/%)
+else
+ifneq (,$(findstring $(SPDK_ROOT_DIR)/examples,$(CURDIR)))
+	APP := $(APP_NAME:%=$(SPDK_ROOT_DIR)/build/examples/%)
+endif
+endif
 
-APP = hello_bdev
+LIBS += $(SPDK_LIB_LINKER_ARGS)
 
-C_SRCS := hello_bdev.c
+CLEAN_FILES = $(APP)
 
-SPDK_LIB_LIST = $(ALL_MODULES_LIST) event_bdev
+all : $(APP)
+	@:
 
-echo $(SPDK_LIB_LIST)
+install: empty_rule
+
+uninstall: empty_rule
+
+# To avoid overwriting warning
+empty_rule:
+	@:
+
+$(APP) : $(OBJS) $(SPDK_LIB_FILES) $(ENV_LIBS)
+	$(LINK_CXX)
+
+clean :
+	$(CLEAN_C) $(CLEAN_FILES)
+
+include $(SPDK_ROOT_DIR)/mk/spdk.deps.mk
