@@ -1,6 +1,6 @@
 CC := g++
 
-ALL_SPDK_LIBS := spdk_accel_ioat        spdk_blobfs         spdk_jsonrpc \
+ALL_SPDK_LIBS := $("spdk_accel_ioat spdk_blobfs spdk_jsonrpc \
 spdk_accel_modules     spdk_blob           spdk_log \
 spdk_accel             spdk_conf           spdk_lvol \
 spdk_bdev_aio          spdk_dpdklibs       spdk_nbd \
@@ -20,7 +20,7 @@ spdk_bdev_split        spdk_event_vmd      spdk_util \
 spdk_bdev_virtio       spdk_ftl            \
 spdk_bdev_zone_block   spdk_ioat           spdk_vhost \
 spdk_blob_bdev         spdk_iscsi          spdk_virtio \
-spdk_blobfs_bdev       spdk_json           spdk_vmd
+spdk_blobfs_bdev       spdk_json           spdk_vmd")
 
 # PKG-CONFIG
 SPDK_BUILD_DIR=/home/hanshukai/import_libs/spdk/build/lib
