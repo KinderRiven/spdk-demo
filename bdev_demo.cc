@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 19:07:40
+ * @LastEditTime: 2021-04-29 19:12:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -36,6 +36,7 @@ public:
 
 public:
     uint32_t io_cnt = 0;
+    uint64_t io_addr;
     Timer _timer;
 
 public:
@@ -89,9 +90,11 @@ int poller_bdev_write(void* argv)
 {
     if (!g_app_stop) {
         spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
+        uint64_t _addr = _ctx->io_addr;
+        _ctx->io_addr += _ctx->block_size;
         void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
         _ctx->io_cnt++;
-        int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
+        int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, _addr, _ctx->block_size, io_cb, _wbuf);
         if (_rc) {
             printf("spdk_bdev_write failed, %d", _rc);
         }
@@ -136,6 +139,7 @@ void start_io_event(void* bdev, void* desc)
     g_spdk_ctx[_core_id].core_id = _core_id;
     g_spdk_ctx[_core_id].bdev = _bdev;
     g_spdk_ctx[_core_id].desc = _desc;
+    g_spdk_ctx[_core_id].io_addr = 0;
     g_spdk_ctx[_core_id].block_size = 4096UL;
 
     assert(_desc != nullptr);
