@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 15:39:35
+ * @LastEditTime: 2021-04-29 15:41:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -130,6 +130,7 @@ void stop_event(void* arg1, void* arg2)
         g_spdk_ctx[_thread_id].q_poller.pop();
         spdk_poller_unregister(&_poller);
     }
+    spdk_put_io_channel(g_spdk_ctx[_thread_id].channel);
 
     struct spdk_thread* _thread = spdk_get_thread();
     spdk_thread_exit(_thread);
