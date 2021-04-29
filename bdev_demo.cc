@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 15:41:21
+ * @LastEditTime: 2021-04-29 15:45:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -59,15 +59,15 @@ static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev
 int poller_bdev_read(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
-    // int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
-    // assert(_rc == 0);
+    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
+    assert(_rc == 0);
 }
 
 int poller_bdev_write(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
-    // int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, io_cb, argv);
-    // assert(_rc == 0);
+    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, io_cb, argv);
+    assert(_rc == 0);
 }
 
 int poller_clean_cq(void* argv)
@@ -131,7 +131,6 @@ void stop_event(void* arg1, void* arg2)
         spdk_poller_unregister(&_poller);
     }
     spdk_put_io_channel(g_spdk_ctx[_thread_id].channel);
-
     struct spdk_thread* _thread = spdk_get_thread();
     spdk_thread_exit(_thread);
 }
