@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:19:33
+ * @LastEditTime: 2021-04-29 16:21:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -40,6 +40,7 @@ public:
     std::queue<struct spdk_poller*> q_poller;
 };
 
+static int g_app_rc;
 static char g_bdev_name[] = "Nvme0n1";
 static struct spdk_bdev* g_bdev = nullptr;
 static struct spdk_bdev_desc* g_desc = nullptr;
@@ -202,10 +203,11 @@ void stop_app()
             spdk_event_call(event);
         }
     }
+
     printf("bdev close!\n");
     spdk_bdev_close(g_desc);
     printf("spdk_app_stop!\n");
-    // spdk_app_stop(0);
+    spdk_app_stop(g_app_rc);
 }
 
 int main(int argc, char** argv)
@@ -226,7 +228,7 @@ int main(int argc, char** argv)
 
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
         _app_opts.name, _app_opts.json_config_file, _app_opts.reactor_mask, _app_opts.main_core);
-    _rc = spdk_app_start(&_app_opts, start_app, nullptr);
+    g_app_rc = spdk_app_start(&_app_opts, start_app, nullptr);
 
     printf("spdk_app_fini");
     spdk_app_fini();
