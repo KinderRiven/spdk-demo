@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 14:44:02
+ * @LastEditTime: 2021-04-29 14:44:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -160,7 +160,7 @@ void start_app(void* cb)
         assert(_bdev != nullptr);
         _rc = spdk_bdev_open_ext(_bdv_name, true, bdev_event_cb, nullptr, &_desc);
         _bdev = spdk_bdev_desc_get_bdev(_desc);
-        printf("spdk_bdev_open [nvme][bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
+        printf("spdk_bdev_open [%s][bs:%zu][align:%zu]\n", _bdv_name, spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
         if (_rc) {
             printf("spdk_bdev_open_ext failed!\n");
             exit(1);
