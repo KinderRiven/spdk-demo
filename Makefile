@@ -17,7 +17,7 @@ spdk_bdev_passthru     spdk_event_scsi     spdk_syslibs \
 spdk_bdev              spdk_event_sock     spdk_thread \
 spdk_bdev_raid         spdk_event_vhost    spdk_trace \
 spdk_bdev_split        spdk_event_vmd      spdk_util \
-spdk_bdev_virtio       spdk_ftl            spdk_ut_mock \
+spdk_bdev_virtio       spdk_ftl            \
 spdk_bdev_zone_block   spdk_ioat           spdk_vhost \
 spdk_blob_bdev         spdk_iscsi          spdk_virtio \
 spdk_blobfs_bdev       spdk_json           spdk_vmd
