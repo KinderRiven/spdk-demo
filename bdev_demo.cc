@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 14:44:47
+ * @LastEditTime: 2021-04-29 15:28:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -137,7 +137,7 @@ void stop_event(void* arg1, void* arg2)
 void start_app(void* cb)
 {
     int _rc;
-    char _bdv_name[] = "Malloc0";
+    char _bdv_name[] = "Nvme0n1";
     struct spdk_bdev* _bdev = nullptr;
     struct spdk_bdev_desc* _desc = nullptr;
     struct spdk_io_channel* _io_channel = nullptr;
@@ -146,13 +146,11 @@ void start_app(void* cb)
     spdk_bdev_get_opts(&__opts, sizeof(__opts));
     printf("bdev_pool_size:%d\n", __opts.bdev_io_pool_size);
 
-#if 0
     _bdev = spdk_bdev_first();
     while (_bdev != nullptr) {
         printf("module_name [%s]\n", spdk_bdev_get_module_name(_bdev));
         _bdev = spdk_bdev_next(_bdev);
     }
-#endif
 
     _bdev = spdk_bdev_get_by_name(_bdv_name);
     if (_bdev == nullptr) {
