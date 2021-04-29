@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:37:47
+ * @LastEditTime: 2021-04-29 17:41:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -61,6 +61,11 @@ static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
 static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev, void* event_ctx)
 {
     printf("bdev_event_cb [%d]\n", type);
+}
+
+static void bdev_exit(void* argv)
+{
+    *(int*)argv = 1;
 }
 
 int poller_bdev_read(void* argv)
@@ -220,10 +225,13 @@ void stop_io_event(void* arg1, void* arg2)
 
 void stop_app()
 {
-    int _v;
     g_app_stop = true;
-    printf("input anything to continue:");
-    scanf("%d", &_v);
+    int _v = 0;
+    // printf("input anything to continue:");
+    // scanf("%d", &_v);
+    spdk_bdev_wait_for_examine(bdev_exit, (void*)&_v);
+
+    while (!_v) { };
 
     int i;
     struct spdk_thread* _spdk_thread;
