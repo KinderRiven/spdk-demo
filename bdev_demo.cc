@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:16:44
+ * @LastEditTime: 2021-04-29 17:19:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -208,10 +208,6 @@ void stop_io_event(void* arg1, void* arg2)
     printf("free io channel.\n");
     assert(g_spdk_ctx[_core_id].channel != nullptr);
     spdk_put_io_channel(g_spdk_ctx[_core_id].channel);
-
-    printf("exit thread!\n");
-    struct spdk_thread* _thread = spdk_get_thread();
-    spdk_thread_exit(_thread);
     g_num_run_thread--;
 }
 
