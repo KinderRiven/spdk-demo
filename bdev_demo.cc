@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:41:19
+ * @LastEditTime: 2021-04-29 17:43:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -227,11 +227,8 @@ void stop_app()
 {
     g_app_stop = true;
     int _v = 0;
-    // printf("input anything to continue:");
-    // scanf("%d", &_v);
-    spdk_bdev_wait_for_examine(bdev_exit, (void*)&_v);
-
-    while (!_v) { };
+    printf("input anything to continue:");
+    scanf("%d", &_v);
 
     int i;
     struct spdk_thread* _spdk_thread;
