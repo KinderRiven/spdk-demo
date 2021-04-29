@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:30:27
+ * @LastEditTime: 2021-04-29 16:31:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -209,14 +209,14 @@ void stop_app()
         }
     }
 
-    if (g_num_run_thread == 0) {
-        printf("bdev close!\n");
-        spdk_bdev_close(g_desc);
-        // printf("spdk_app_stop! (%d)\n", g_app_rc);
-        // spdk_app_stop(g_app_rc);
-        printf("spdk_app_fini");
-        spdk_app_fini();
-    }
+    while (g_num_run_thread != 0) { }
+
+    printf("bdev close!\n");
+    spdk_bdev_close(g_desc);
+    // printf("spdk_app_stop! (%d)\n", g_app_rc);
+    // spdk_app_stop(g_app_rc);
+    printf("spdk_app_fini");
+    spdk_app_fini();
 }
 
 int main(int argc, char** argv)
