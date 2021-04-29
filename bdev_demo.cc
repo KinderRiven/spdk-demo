@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:19:55
+ * @LastEditTime: 2021-04-29 17:20:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -67,7 +67,7 @@ int poller_bdev_read(void* argv)
     spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
-    // printf("%d\n", _ctx->io_cnt);
+    printf("%d\n", _ctx->io_cnt);
     int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
     if (_rc) {
         printf("spdk_bdev_read failed, %d", _rc);
@@ -80,7 +80,7 @@ int poller_bdev_write(void* argv)
     spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
-    // printf("%d\n", _ctx->io_cnt);
+    printf("%d\n", _ctx->io_cnt);
     int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
     if (_rc) {
         printf("spdk_bdev_write failed, %d", _rc);
@@ -140,10 +140,12 @@ void start_io_event(void* bdev, void* desc)
     assert(_poller != nullptr);
     g_spdk_ctx[_core_id].q_poller.push(_poller);
 
+#if 0
     printf("polling_poller_register [poller_clean_cq][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
     _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_core_id], 0);
     assert(_poller != nullptr);
     g_spdk_ctx[_core_id].q_poller.push(_poller);
+#endif
 }
 
 void start_app(void* cb)
