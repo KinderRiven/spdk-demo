@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 14:42:06
+ * @LastEditTime: 2021-04-29 14:44:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -137,6 +137,7 @@ void stop_event(void* arg1, void* arg2)
 void start_app(void* cb)
 {
     int _rc;
+    char _bdv_name[] = "Malloc0";
     struct spdk_bdev* _bdev = nullptr;
     struct spdk_bdev_desc* _desc = nullptr;
     struct spdk_io_channel* _io_channel = nullptr;
@@ -151,13 +152,13 @@ void start_app(void* cb)
         _bdev = spdk_bdev_next(_bdev);
     }
 
-    _bdev = spdk_bdev_get_by_name("Nvme0n1");
+    _bdev = spdk_bdev_get_by_name(_bdv_name);
     if (_bdev == nullptr) {
-        printf("spdk_bdev_get_by_name failed! [Nvme0n1]\n");
+        printf("spdk_bdev_get_by_name failed! [%s]\n", _bdv_name);
         exit(1);
     } else {
         assert(_bdev != nullptr);
-        _rc = spdk_bdev_open_ext("Nvme0n1", true, bdev_event_cb, nullptr, &_desc);
+        _rc = spdk_bdev_open_ext(_bdv_name, true, bdev_event_cb, nullptr, &_desc);
         _bdev = spdk_bdev_desc_get_bdev(_desc);
         printf("spdk_bdev_open [nvme][bs:%zu][align:%zu]\n", spdk_bdev_get_block_size(_bdev), spdk_bdev_get_buf_align(_bdev));
         if (_rc) {
