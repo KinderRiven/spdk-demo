@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:08:58
+ * @LastEditTime: 2021-04-29 16:09:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -60,9 +60,13 @@ static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev
 int poller_bdev_read(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
     printf("%d\n", _ctx->io_cnt);
-    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
+    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, argv);
+    if (_rc) {
+        printf("spdk_bdev_write failed, %d", _rc);
+    }
     assert(_rc == 0);
 }
 
