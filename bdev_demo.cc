@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:36:10
+ * @LastEditTime: 2021-04-29 16:37:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -121,12 +121,12 @@ void start_io_event(void* bdev, void* desc)
         exit(1);
     }
 
-    printf("polling_poller_register [poller_bdev_write][core_id:%d]!\n", _core_id);
+    printf("polling_poller_register [poller_bdev_write][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
     struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_thread_id], 0);
     assert(_poller != nullptr);
     g_spdk_ctx[_thread_id].q_poller.push(_poller);
 
-    printf("polling_poller_register [poller_clean_cq][core_id:%d]!\n", _core_id);
+    printf("polling_poller_register [poller_clean_cq][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
     _poller = spdk_poller_register(poller_clean_cq, (void*)&g_spdk_ctx[_thread_id], 0);
     assert(_poller != nullptr);
     g_spdk_ctx[_thread_id].q_poller.push(_poller);
