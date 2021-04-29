@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 15:45:42
+ * @LastEditTime: 2021-04-29 15:49:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -59,6 +59,8 @@ static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev
 int poller_bdev_read(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    _ctx->io_cnt++;
+    printf("%d\n", _ctx->io_cnt);
     int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, nullptr, nullptr);
     assert(_rc == 0);
 }
