@@ -1,6 +1,7 @@
 CC := g++
 
-ALL_SPDK_LIBS := $("spdk_accel_ioat spdk_blobfs spdk_jsonrpc \
+# All libs
+ALL_SPDK_LIBS := spdk_accel_ioat spdk_blobfs spdk_jsonrpc \
 spdk_accel_modules     spdk_blob           spdk_log \
 spdk_accel             spdk_conf           spdk_lvol \
 spdk_bdev_aio          spdk_dpdklibs       spdk_nbd \
@@ -20,12 +21,11 @@ spdk_bdev_split        spdk_event_vmd      spdk_util \
 spdk_bdev_virtio       spdk_ftl            \
 spdk_bdev_zone_block   spdk_ioat           spdk_vhost \
 spdk_blob_bdev         spdk_iscsi          spdk_virtio \
-spdk_blobfs_bdev       spdk_json           spdk_vmd")
+spdk_blobfs_bdev       spdk_json           spdk_vmd
 
 # PKG-CONFIG
 SPDK_BUILD_DIR=/home/hanshukai/import_libs/spdk/build/lib
 SPDK_PKG_CONFIG_PATH=$(SPDK_BUILD_DIR)/pkgconfig
-# SPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(SPDK_PKG_CONFIG_PATH)" pkg-config --cflags --libs spdk_bdev_nvme spdk_nvme spdk_bdev_malloc spdk_bdev_modules spdk_env_dpdk spdk_event spdk_bdev)
 SPDK_LINK_FLAGS := $(shell PKG_CONFIG_PATH="$(SPDK_PKG_CONFIG_PATH)" pkg-config --cflags --libs $(ALL_SPDK_LIBS))
 SPDK_SYSLIB_FLAGS := $(shell PKG_CONFIG_PATH="$(SPDK_PKG_CONFIG_PATH)" pkg-config --cflags --libs --static spdk_syslibs)
 
