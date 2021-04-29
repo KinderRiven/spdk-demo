@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:43:13
+ * @LastEditTime: 2021-04-29 17:45:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -127,7 +127,7 @@ void start_io_event(void* bdev, void* desc)
 #endif
 
     struct spdk_thread* _thread = spdk_get_thread();
-    spdk_set_thread(_thread);
+    // spdk_set_thread(_thread);
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
 
     printf("Fuck you, man! start_io_event [thread_id:%d][core_id:%d].\n", _thread_id, _core_id);
