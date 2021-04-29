@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:14:15
+ * @LastEditTime: 2021-04-29 17:16:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -235,10 +235,8 @@ void stop_app()
 
     printf("bdev close!\n");
     spdk_bdev_close(g_desc);
-    // printf("spdk_app_stop! (%d)\n", g_app_rc);
-    // spdk_app_stop(g_app_rc);
-    printf("spdk_app_fini");
-    spdk_app_fini();
+    printf("spdk_app_stop! (%d)\n", g_app_rc);
+    spdk_app_stop(g_app_rc);
 }
 
 int main(int argc, char** argv)
@@ -260,5 +258,8 @@ int main(int argc, char** argv)
     printf("OPT [name:%s][file_name:%s][reactor_mask:%s][main_core:%d]\n",
         _app_opts.name, _app_opts.json_config_file, _app_opts.reactor_mask, _app_opts.main_core);
     g_app_rc = spdk_app_start(&_app_opts, start_app, nullptr);
+
+    printf("spdk_app_fini");
+    spdk_app_fini();
     return 0;
 }
