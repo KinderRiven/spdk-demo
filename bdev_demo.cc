@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 15:51:08
+ * @LastEditTime: 2021-04-29 15:56:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -76,6 +76,7 @@ int poller_bdev_write(void* argv)
 
 int poller_clean_cq(void* argv)
 {
+    struct spdk_bdev_io_wait_entry bdev_io_wait;
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
 }
 
