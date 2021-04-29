@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:45:39
+ * @LastEditTime: 2021-04-29 19:07:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -19,6 +19,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include "timer.h"
+
 #include "spdk/bdev.h"
 #include "spdk/env.h"
 #include "spdk/event.h"
@@ -34,6 +36,7 @@ public:
 
 public:
     uint32_t io_cnt = 0;
+    Timer _timer;
 
 public:
     uint32_t io_depth;
@@ -74,7 +77,6 @@ int poller_bdev_read(void* argv)
         spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
         void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
         _ctx->io_cnt++;
-        // printf("%d\n", _ctx->io_cnt);
         int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
         if (_rc) {
             printf("spdk_bdev_read failed, %d", _rc);
@@ -89,7 +91,6 @@ int poller_bdev_write(void* argv)
         spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
         void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
         _ctx->io_cnt++;
-        // printf("%d\n", _ctx->io_cnt);
         int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
         if (_rc) {
             printf("spdk_bdev_write failed, %d", _rc);
@@ -145,6 +146,7 @@ void start_io_event(void* bdev, void* desc)
         exit(1);
     }
 
+    g_spdk_ctx[_core_id]._timer.Start();
     printf("polling_poller_register [poller_bdev_write][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
     struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_core_id], 0);
     assert(_poller != nullptr);
@@ -207,9 +209,13 @@ void stop_io_event(void* arg1, void* arg2)
 {
     int _core_id = spdk_env_get_current_core();
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
+    g_spdk_ctx[_core_id]._timer.Stop();
 
-    printf("stop_event [thread_id:%d/core_id:%d][io_cnt:%d]\n",
-        _thread_id, _core_id, g_spdk_ctx[_core_id].io_cnt);
+    printf("stop_event [thread_id:%d/core_id:%d]\n", _thread_id, _core_id);
+
+    size_t _total_size = g_spdk_ctx[_core_id].io_cnt * g_spdk_ctx[_core_id].block_size / (1024UL * 1024);
+    double _seconds = g_spdk_ctx[_core_id]._timer.GetSeconds();
+    printf("io_finished [size:%zuMB][cnt:%d][bw:%.2fMB/s]\n", _total_size, g_spdk_ctx[_core_id].io_cnt, 1.0 * _total_size / _seconds);
 
     while (!g_spdk_ctx[_core_id].q_poller.empty()) {
         struct spdk_poller* _poller = g_spdk_ctx[_core_id].q_poller.front();
