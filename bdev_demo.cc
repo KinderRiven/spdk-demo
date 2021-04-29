@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 15:38:24
+ * @LastEditTime: 2021-04-29 15:39:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -102,7 +102,7 @@ void start_io_event(void* bdev, void* desc)
         exit(1);
     }
 
-    g_spdk_ctx[_thread_id].dma_buf = spdk_dma_zmalloc(g_spdk_ctx->block_size, 4096UL, nullptr);
+    g_spdk_ctx[_thread_id].dma_buf = spdk_dma_zmalloc(g_spdk_ctx[_thread_id].block_size, 4096UL, nullptr);
     if (g_spdk_ctx[_thread_id].dma_buf == nullptr) {
         printf("spdk_dma_zmalloc failed!\n");
         exit(1);
