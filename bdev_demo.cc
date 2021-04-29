@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:09:40
+ * @LastEditTime: 2021-04-29 16:09:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -65,7 +65,7 @@ int poller_bdev_read(void* argv)
     printf("%d\n", _ctx->io_cnt);
     int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, argv);
     if (_rc) {
-        printf("spdk_bdev_write failed, %d", _rc);
+        printf("spdk_bdev_read failed, %d", _rc);
     }
     assert(_rc == 0);
 }
