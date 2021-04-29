@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:04:20
+ * @LastEditTime: 2021-04-29 16:08:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -21,11 +21,11 @@
 #include "spdk/bdev.h"
 #include "spdk/env.h"
 #include "spdk/event.h"
+#include "spdk/stdinc.h"
 #include "spdk/thread.h"
 
 struct spdk_thread_context_t {
 public:
-    void* dma_buf;
     struct spdk_bdev* bdev;
     struct spdk_bdev_desc* desc;
     struct spdk_io_channel* channel;
@@ -69,9 +69,13 @@ int poller_bdev_read(void* argv)
 int poller_bdev_write(void* argv)
 {
     spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
     printf("%d\n", _ctx->io_cnt);
-    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _ctx->dma_buf, 0, _ctx->block_size, io_cb, argv);
+    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, argv);
+    if (_rc) {
+        printf("spdk_bdev_write failed, %d", _rc);
+    }
     assert(_rc == 0);
 }
 
@@ -105,12 +109,6 @@ void start_io_event(void* bdev, void* desc)
     if (g_spdk_ctx[_thread_id].channel == nullptr) {
         spdk_bdev_close(_desc);
         SPDK_ERRLOG("spdk_bdev_get_io_channe failed.\n");
-        exit(1);
-    }
-
-    g_spdk_ctx[_thread_id].dma_buf = spdk_dma_zmalloc(g_spdk_ctx[_thread_id].block_size, 4096UL, nullptr);
-    if (g_spdk_ctx[_thread_id].dma_buf == nullptr) {
-        printf("spdk_dma_zmalloc failed!\n");
         exit(1);
     }
 
