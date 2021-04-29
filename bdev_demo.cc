@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:29:48
+ * @LastEditTime: 2021-04-29 16:30:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -177,8 +177,6 @@ void start_app(void* cb)
 
 void stop_io_event(void* arg1, void* arg2)
 {
-    g_num_run_thread--;
-
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
     printf("stop_event [thread%d/core%d][io_cnt:%d]\n",
         _thread_id, spdk_env_get_current_core(), g_spdk_ctx[_thread_id].io_cnt);
@@ -193,6 +191,7 @@ void stop_io_event(void* arg1, void* arg2)
     spdk_put_io_channel(g_spdk_ctx[_thread_id].channel);
     // struct spdk_thread* _thread = spdk_get_thread();
     // spdk_thread_exit(_thread);
+    g_num_run_thread--;
 }
 
 void stop_app()
