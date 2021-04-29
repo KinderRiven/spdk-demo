@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:08:30
+ * @LastEditTime: 2021-04-29 17:13:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -103,6 +103,7 @@ void start_io_event(void* bdev, void* desc)
     struct spdk_bdev* _bdev = (struct spdk_bdev*)bdev;
     struct spdk_bdev_desc* _desc = (struct spdk_bdev_desc*)desc;
 
+#if 0
     char _s_cpu_mask[128];
     struct spdk_cpuset* _cpu_mask = spdk_cpuset_alloc();
     spdk_cpuset_set_cpu(_cpu_mask, _core_id, true);
@@ -112,6 +113,11 @@ void start_io_event(void* bdev, void* desc)
     char _name[128];
     sprintf(_name, "%d", _core_id);
     struct spdk_thread* _thread = spdk_thread_create(_name, _cpu_mask);
+    spdk_set_thread(_thread);
+    int _thread_id = spdk_thread_get_id(spdk_get_thread());
+#endif
+
+    struct spdk_thread* _thread = spdk_get_thread();
     spdk_set_thread(_thread);
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
 
