@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:31:39
+ * @LastEditTime: 2021-04-29 17:32:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -221,6 +221,7 @@ void stop_io_event(void* arg1, void* arg2)
 void stop_app()
 {
     g_app_stop = true;
+    spdk_bdev_wait_for_examine(nullptr, nullptr);
 
     int i;
     struct spdk_thread* _spdk_thread;
