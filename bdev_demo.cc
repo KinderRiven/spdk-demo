@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:29:19
+ * @LastEditTime: 2021-04-29 17:31:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -44,7 +44,7 @@ public:
     std::queue<struct spdk_poller*> q_poller;
 };
 
-static bool g_app_stop = false;
+static std::atomic<bool> g_app_stop(false);
 static int g_num_run_thread = 0;
 static int g_app_rc;
 static char g_bdev_name[] = "Nvme0n1";
@@ -65,28 +65,32 @@ static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev
 
 int poller_bdev_read(void* argv)
 {
-    spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
-    void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
-    _ctx->io_cnt++;
-    // printf("%d\n", _ctx->io_cnt);
-    int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
-    if (_rc) {
-        printf("spdk_bdev_read failed, %d", _rc);
+    if (!g_app_stop) {
+        spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
+        void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
+        _ctx->io_cnt++;
+        // printf("%d\n", _ctx->io_cnt);
+        int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
+        if (_rc) {
+            printf("spdk_bdev_read failed, %d", _rc);
+        }
+        assert(_rc == 0);
     }
-    assert(_rc == 0);
 }
 
 int poller_bdev_write(void* argv)
 {
-    spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
-    void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
-    _ctx->io_cnt++;
-    // printf("%d\n", _ctx->io_cnt);
-    int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
-    if (_rc) {
-        printf("spdk_bdev_write failed, %d", _rc);
+    if (!g_app_stop) {
+        spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
+        void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
+        _ctx->io_cnt++;
+        // printf("%d\n", _ctx->io_cnt);
+        int _rc = spdk_bdev_write(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
+        if (_rc) {
+            printf("spdk_bdev_write failed, %d", _rc);
+        }
+        assert(_rc == 0);
     }
-    assert(_rc == 0);
 }
 
 int poller_clean_cq(void* argv)
@@ -216,6 +220,8 @@ void stop_io_event(void* arg1, void* arg2)
 
 void stop_app()
 {
+    g_app_stop = true;
+
     int i;
     struct spdk_thread* _spdk_thread;
     _spdk_thread = spdk_get_thread();
@@ -234,11 +240,8 @@ void stop_app()
 
     printf("bdev close!\n");
     spdk_bdev_close(g_desc);
-
     printf("app stop!\n");
     spdk_app_stop(g_app_rc);
-
-    g_app_stop = true;
 }
 
 int main(int argc, char** argv)
