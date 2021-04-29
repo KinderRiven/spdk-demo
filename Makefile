@@ -1,6 +1,6 @@
 CC := g++
 
-ALL_SPDK_LIBS := (spdk_accel_ioat        spdk_blobfs         spdk_jsonrpc \
+ALL_SPDK_LIBS := $(spdk_accel_ioat        spdk_blobfs         spdk_jsonrpc \
 spdk_accel_modules     spdk_blob           spdk_log \
 spdk_accel             spdk_conf           spdk_lvol \
 spdk_bdev_aio          spdk_dpdklibs       spdk_nbd \
