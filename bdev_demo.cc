@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 17:20:58
+ * @LastEditTime: 2021-04-29 17:21:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -67,7 +67,7 @@ int poller_bdev_read(void* argv)
     spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
-    printf("%d\n", _ctx->io_cnt);
+    // printf("%d\n", _ctx->io_cnt);
     int _rc = spdk_bdev_read(_ctx->desc, _ctx->channel, _wbuf, 0, _ctx->block_size, io_cb, _wbuf);
     if (_rc) {
         printf("spdk_bdev_read failed, %d", _rc);
@@ -199,7 +199,7 @@ void stop_io_event(void* arg1, void* arg2)
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
 
     printf("stop_event [thread_id:%d/core_id:%d][io_cnt:%d]\n",
-        _thread_id, _core_id, g_spdk_ctx[_thread_id].io_cnt);
+        _thread_id, _core_id, g_spdk_ctx[_core_id].io_cnt);
 
     while (!g_spdk_ctx[_core_id].q_poller.empty()) {
         struct spdk_poller* _poller = g_spdk_ctx[_core_id].q_poller.front();
