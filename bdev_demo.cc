@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-09-17 15:32:04
- * @LastEditTime: 2021-04-29 16:37:06
+ * @LastEditTime: 2021-04-29 16:58:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /spdk-demo/reactor_demo.cc
@@ -25,8 +25,9 @@
 #include "spdk/stdinc.h"
 #include "spdk/thread.h"
 
-struct spdk_thread_context_t {
+struct spdk_core_context_t {
 public:
+    uint32_t core_id;
     struct spdk_bdev* bdev;
     struct spdk_bdev_desc* desc;
     struct spdk_io_channel* channel;
@@ -35,9 +36,11 @@ public:
     uint32_t io_cnt = 0;
 
 public:
-    uint64_t thread_id;
     uint32_t io_depth;
     size_t block_size;
+
+public:
+    struct spdk_thread* thread;
     std::queue<struct spdk_poller*> q_poller;
 };
 
@@ -46,7 +49,7 @@ static int g_app_rc;
 static char g_bdev_name[] = "Nvme0n1";
 static struct spdk_bdev* g_bdev = nullptr;
 static struct spdk_bdev_desc* g_desc = nullptr;
-static spdk_thread_context_t g_spdk_ctx[128];
+static spdk_core_context_t g_spdk_ctx[128];
 
 static void io_cb(struct spdk_bdev_io* bdev_io, bool success, void* cb_arg)
 {
@@ -62,7 +65,7 @@ static void bdev_event_cb(enum spdk_bdev_event_type type, struct spdk_bdev* bdev
 
 int poller_bdev_read(void* argv)
 {
-    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
     // printf("%d\n", _ctx->io_cnt);
@@ -75,7 +78,7 @@ int poller_bdev_read(void* argv)
 
 int poller_bdev_write(void* argv)
 {
-    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
     void* _wbuf = spdk_dma_zmalloc(_ctx->block_size, 4096UL, nullptr);
     _ctx->io_cnt++;
     // printf("%d\n", _ctx->io_cnt);
@@ -89,7 +92,7 @@ int poller_bdev_write(void* argv)
 int poller_clean_cq(void* argv)
 {
     struct spdk_bdev_io_wait_entry bdev_io_wait;
-    spdk_thread_context_t* _ctx = (spdk_thread_context_t*)argv;
+    spdk_core_context_t* _ctx = (spdk_core_context_t*)argv;
 }
 
 void start_io_event(void* bdev, void* desc)
@@ -100,29 +103,37 @@ void start_io_event(void* bdev, void* desc)
     struct spdk_bdev_desc* _desc = (struct spdk_bdev_desc*)desc;
 
     int _core_id = spdk_env_get_current_core();
-    printf("Fuck you, man! start_event [core_%d].\n", _core_id);
+
+    char _s_cpu_mask[128];
+    struct spdk_cpuset* _cpu_mask = spdk_cpuset_alloc();
+    spdk_cpuset_set_cpu(_cpu_mask, _core_id, true);
+    spdk_thread_set_cpumask(_cpu_mask);
+    spdk_cpuset_parse(_cpu_mask, _s_cpu_mask);
 
     char _name[128];
     sprintf(_name, "%d", _core_id);
-    struct spdk_thread* _thread = spdk_thread_create(_name, nullptr);
+    struct spdk_thread* _thread = spdk_thread_create(_name, _cpu_mask);
     spdk_set_thread(_thread);
+    int _thread_id = spdk_thread_get_id(spdk_get_thread());
 
-    uint32_t _thread_id = spdk_thread_get_id(spdk_get_thread());
-    g_spdk_ctx[_thread_id].thread_id = _thread_id;
-    g_spdk_ctx[_thread_id].bdev = _bdev;
-    g_spdk_ctx[_thread_id].desc = _desc;
-    g_spdk_ctx[_thread_id].block_size = 4096UL;
+    printf("Fuck you, man! start_io_event [thread_id:%d][core_id:%d][cpu_mask:%s].\n", _thread_id, _core_id, _s_cpu_mask);
+
+    g_spdk_ctx[_core_id].thread = _thread;
+    g_spdk_ctx[_core_id].core_id = _core_id;
+    g_spdk_ctx[_core_id].bdev = _bdev;
+    g_spdk_ctx[_core_id].desc = _desc;
+    g_spdk_ctx[_core_id].block_size = 4096UL;
 
     assert(_desc != nullptr);
-    g_spdk_ctx[_thread_id].channel = spdk_bdev_get_io_channel(_desc);
-    if (g_spdk_ctx[_thread_id].channel == nullptr) {
+    g_spdk_ctx[_core_id].channel = spdk_bdev_get_io_channel(_desc);
+    if (g_spdk_ctx[_core_id].channel == nullptr) {
         spdk_bdev_close(_desc);
         SPDK_ERRLOG("spdk_bdev_get_io_channe failed.\n");
         exit(1);
     }
 
     printf("polling_poller_register [poller_bdev_write][thread_id:%d][core_id:%d]!\n", _thread_id, _core_id);
-    struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_thread_id], 0);
+    struct spdk_poller* _poller = spdk_poller_register(poller_bdev_write, (void*)&g_spdk_ctx[_core_id], 0);
     assert(_poller != nullptr);
     g_spdk_ctx[_thread_id].q_poller.push(_poller);
 
@@ -178,7 +189,7 @@ void start_app(void* cb)
 void stop_io_event(void* arg1, void* arg2)
 {
     int _thread_id = spdk_thread_get_id(spdk_get_thread());
-    printf("stop_event [thread%d/core%d][io_cnt:%d]\n",
+    printf("stop_event [thread_id:%d/core_id:%d][io_cnt:%d]\n",
         _thread_id, spdk_env_get_current_core(), g_spdk_ctx[_thread_id].io_cnt);
 
     while (!g_spdk_ctx[_thread_id].q_poller.empty()) {
